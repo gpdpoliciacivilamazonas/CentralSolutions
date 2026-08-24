@@ -1,0 +1,17 @@
+services:
+  centralsolutions:
+    container_name: centralsolutions
+    build:
+      context: .
+      dockerfile: CentralSolutions/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: Data Source=/app/data/central_solutions.db
+    volumes:
+      - centralsolutions-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  centralsolutions-data:

@@ -1,0 +1,63 @@
+@model SupportTicket
+
+@{
+    ViewData["Title"] = "Detalhes do chamado";
+}
+
+<div class="page-heading">
+    <div>
+        <span class="eyebrow text-primary">Visualização</span>
+        <h1>Detalhes do chamado</h1>
+        <p>Consulte os dados registrados para esta demanda.</p>
+    </div>
+</div>
+
+<div class="content-card detail-card">
+    <div class="d-flex justify-content-between align-items-start gap-3 mb-4">
+        <div>
+            <span class="eyebrow text-primary">@Html.DisplayFor(model => model.Department)</span>
+            <h2 class="h4 mb-1">@Html.DisplayFor(model => model.TicketType)</h2>
+        </div>
+        <span class="status-badge @GetStatusClass(Model.ResolutionStatus)">@GetStatusName(Model.ResolutionStatus)</span>
+    </div>
+
+    <dl class="row detail-list">
+        <dt class="col-sm-4">@Html.DisplayNameFor(model => model.ResponsibleTechnician)</dt>
+        <dd class="col-sm-8">@(Model.ResponsibleTechnician ?? "-")</dd>
+        <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Resolution)</dt>
+        <dd class="col-sm-8">@(Model.Resolution ?? "-")</dd>
+        <dt class="col-sm-4">@Html.DisplayNameFor(model => model.CreatedAt)</dt>
+        <dd class="col-sm-8">@Model.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</dd>
+        <dt class="col-sm-4">@Html.DisplayNameFor(model => model.UpdatedAt)</dt>
+        <dd class="col-sm-8">@(Model.UpdatedAt?.ToLocalTime().ToString("dd/MM/yyyy HH:mm") ?? "-")</dd>
+    </dl>
+
+    <div class="d-flex justify-content-end gap-2 mt-4">
+        <a asp-action="Index" class="btn btn-outline-secondary">Voltar</a>
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary px-4">Editar</a>
+    </div>
+</div>
+
+@functions {
+    private static string GetStatusClass(TicketResolutionStatus status)
+    {
+        return status switch
+        {
+            TicketResolutionStatus.Open => "status-open",
+            TicketResolutionStatus.No => "status-no",
+            TicketResolutionStatus.Yes => "status-yes",
+            _ => string.Empty
+        };
+    }
+
+    private static string GetStatusName(TicketResolutionStatus status)
+    {
+        return status switch
+        {
+            TicketResolutionStatus.Open => "Em aberto",
+            TicketResolutionStatus.No => "Não",
+            TicketResolutionStatus.Yes => "Sim",
+            _ => status.ToString()
+        };
+    }
+}
