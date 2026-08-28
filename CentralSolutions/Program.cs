@@ -1,4 +1,4 @@
-using CentralSolutions.Data;
+﻿using CentralSolutions.Data;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -26,6 +26,22 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+
+app.Use(async (context, next) =>
+{
+    context.Response.OnStarting(() =>
+    {
+        if (context.Response.ContentType?.StartsWith("text/html") == true &&
+            !context.Response.ContentType.Contains("charset", StringComparison.OrdinalIgnoreCase))
+        {
+            context.Response.ContentType = "text/html; charset=utf-8";
+        }
+
+        return Task.CompletedTask;
+    });
+
+    await next();
+});
 
 app.UseRouting();
 

@@ -12,28 +12,34 @@
     </div>
 </div>
 
-<div class="content-card detail-card">
+<div class="content-card detail-card printable-area">
     <div class="d-flex justify-content-between align-items-start gap-3 mb-4">
         <div>
             <span class="eyebrow text-primary">@Html.DisplayFor(model => model.Department)</span>
-            <h2 class="h4 mb-1">@Html.DisplayFor(model => model.TicketType)</h2>
+            <h2 class="h4 mb-1">Chamado #@Model.Id - @Html.DisplayFor(model => model.TicketType)</h2>
         </div>
         <span class="status-badge @GetStatusClass(Model.ResolutionStatus)">@GetStatusName(Model.ResolutionStatus)</span>
     </div>
 
     <dl class="row detail-list">
+        <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Id)</dt>
+        <dd class="col-sm-8">#@Model.Id</dd>
         <dt class="col-sm-4">@Html.DisplayNameFor(model => model.ResponsibleTechnician)</dt>
         <dd class="col-sm-8">@(Model.ResponsibleTechnician ?? "-")</dd>
-        <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Resolution)</dt>
-        <dd class="col-sm-8">@(Model.Resolution ?? "-")</dd>
+        <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Problem)</dt>
+        <dd class="col-sm-8">@Model.Problem</dd>
+        <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Solution)</dt>
+        <dd class="col-sm-8">@(Model.Solution ?? "-")</dd>
         <dt class="col-sm-4">@Html.DisplayNameFor(model => model.CreatedAt)</dt>
         <dd class="col-sm-8">@Model.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</dd>
         <dt class="col-sm-4">@Html.DisplayNameFor(model => model.UpdatedAt)</dt>
         <dd class="col-sm-8">@(Model.UpdatedAt?.ToLocalTime().ToString("dd/MM/yyyy HH:mm") ?? "-")</dd>
     </dl>
 
-    <div class="d-flex justify-content-end gap-2 mt-4">
+    <div class="d-flex justify-content-end gap-2 mt-4 no-print">
         <a asp-action="Index" class="btn btn-outline-secondary">Voltar</a>
+        <button type="button" class="btn btn-outline-primary" onclick="window.print()">Imprimir</button>
+        <a asp-action="Export" asp-route-id="@Model.Id" class="btn btn-outline-success">Exportar Excel</a>
         <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary px-4">Editar</a>
     </div>
 </div>

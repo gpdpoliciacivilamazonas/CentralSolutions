@@ -4,6 +4,7 @@ namespace CentralSolutions.Models;
 
 public class SupportTicket
 {
+    [Display(Name = "Nº")]
     public int Id { get; set; }
 
     [Display(Name = "Setor")]
@@ -20,11 +21,16 @@ public class SupportTicket
     [StringLength(120)]
     public string? ResponsibleTechnician { get; set; }
 
-    [Display(Name = "Resolução")]
+    [Display(Name = "Problema")]
+    [Required(ErrorMessage = "Informe o problema.")]
     [StringLength(1000)]
-    public string? Resolution { get; set; }
+    public string Problem { get; set; } = string.Empty;
 
-    [Display(Name = "Resolvido?")]
+    [Display(Name = "Solução")]
+    [StringLength(1000)]
+    public string? Solution { get; set; }
+
+    [Display(Name = "Status")]
     [Required(ErrorMessage = "Informe a situação do chamado.")]
     public TicketResolutionStatus ResolutionStatus { get; set; } = TicketResolutionStatus.Open;
 
@@ -40,9 +46,12 @@ public enum TicketResolutionStatus
     [Display(Name = "Em aberto")]
     Open = 0,
 
+    [Display(Name = "Em andamento")]
+    InProgress= 1,
+
     [Display(Name = "Não")]
-    No = 1,
+    No = 2,
 
     [Display(Name = "Sim")]
-    Yes = 2
+    Yes = 3,
 }

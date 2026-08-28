@@ -3,6 +3,7 @@ using System;
 using CentralSolutions.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CentralSolutions.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260827180836_AddDepartments")]
+    partial class AddDepartments
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.30");
@@ -59,17 +62,12 @@ namespace CentralSolutions.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Problem")
-                        .IsRequired()
+                    b.Property<string>("Resolution")
                         .HasMaxLength(1000)
                         .HasColumnType("TEXT");
 
                     b.Property<int>("ResolutionStatus")
                         .HasColumnType("INTEGER");
-
-                    b.Property<string>("Solution")
-                        .HasMaxLength(1000)
-                        .HasColumnType("TEXT");
 
                     b.Property<string>("ResponsibleTechnician")
                         .HasMaxLength(120)
