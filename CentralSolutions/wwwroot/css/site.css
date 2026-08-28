@@ -72,7 +72,9 @@ body {
 }
 
 .app-shell {
-  max-width: 1180px;
+  max-width: 1680px;
+  padding-left: 2rem;
+  padding-right: 2rem;
 }
 
 .hero-card {
@@ -245,15 +247,22 @@ input[type="number"] {
   background: #f8fafc;
   border-bottom: 1px solid #e2e8f0;
   color: #475569;
-  font-size: 0.78rem;
+  font-size: 0.74rem;
   letter-spacing: 0.05em;
-  padding: 1rem;
+  padding: 0.85rem;
   text-transform: uppercase;
 }
 
 .app-table tbody td {
   border-color: #eef2f7;
-  padding: 1rem;
+  padding: 0.85rem;
+  vertical-align: top;
+}
+
+.app-table td:nth-child(5),
+.app-table td:nth-child(6) {
+  max-width: 260px;
+  white-space: normal;
 }
 
 .status-badge {
@@ -408,6 +417,11 @@ html[data-theme="dark"] .footer {
   .page-heading {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .app-shell {
+    padding-left: 1rem;
+    padding-right: 1rem;
   }
 }
 
