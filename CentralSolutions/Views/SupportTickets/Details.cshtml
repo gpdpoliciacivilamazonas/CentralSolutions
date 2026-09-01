@@ -36,6 +36,15 @@
         <dd class="col-sm-8">@(Model.UpdatedAt?.ToLocalTime().ToString("dd/MM/yyyy HH:mm") ?? "-")</dd>
     </dl>
 
+    <div class="print-footer">
+        <img src="~/img/1000261363.jpg" alt="Brasão Polícia Civil AM" class="print-footer-crest" />
+        <div>
+            <strong>Gerência de processamento de dados</strong>
+            <span>(92) 936677780</span>
+            <span>gpd@policiacivil.am.gov.br</span>
+        </div>
+    </div>
+
     <div class="d-flex justify-content-end gap-2 mt-4 no-print">
         <a asp-action="Index" class="btn btn-outline-secondary">Voltar</a>
         <button type="button" class="btn btn-outline-primary" onclick="window.print()">Imprimir</button>
