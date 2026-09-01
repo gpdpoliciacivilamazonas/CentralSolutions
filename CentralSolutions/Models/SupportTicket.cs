@@ -49,9 +49,9 @@ public enum TicketResolutionStatus
     [Display(Name = "Em andamento")]
     InProgress= 1,
 
-    [Display(Name = "Não")]
+    [Display(Name = "Incompleto")]
     No = 2,
 
-    [Display(Name = "Sim")]
+    [Display(Name = "Completo")]
     Yes = 3,
 }

@@ -111,9 +111,10 @@
         return status switch
         {
             TicketResolutionStatus.Open => "Em aberto",
-            TicketResolutionStatus.No => "Não",
-            TicketResolutionStatus.Yes => "Sim",
-            _ => status.ToString()
+            TicketResolutionStatus.InProgress => "Em andamento",
+            TicketResolutionStatus.No => "Incompleto",
+            TicketResolutionStatus.Yes => "Completo",
+            _ => "Em aberto"
         };
     }
 }

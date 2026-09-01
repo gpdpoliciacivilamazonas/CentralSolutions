@@ -45,8 +45,7 @@ public class SupportTicketsController(ApplicationDbContext context) : Controller
         ViewBag.Statuses = GetStatusSelectList(status);
 
         return View(await tickets
-            .OrderBy(ticket => ticket.Department)
-            .ThenByDescending(ticket => ticket.CreatedAt)
+            .OrderByDescending(ticket => ticket.Id)
             .ToListAsync());
     }
 
@@ -69,13 +68,9 @@ public class SupportTicketsController(ApplicationDbContext context) : Controller
         return View(ticket);
     }
 
-    public async Task<IActionResult> Export(int? id)
+    [HttpGet("SupportTickets/{id:int}/exportar-excel")]
+    public async Task<IActionResult> Export(int id)
     {
-        if (id is null)
-        {
-            return NotFound();
-        }
-
         var ticket = await context.SupportTickets
             .AsNoTracking()
             .FirstOrDefaultAsync(item => item.Id == id);
@@ -98,7 +93,7 @@ public class SupportTicketsController(ApplicationDbContext context) : Controller
         csv.AppendLine($"Atualizado em;{(ticket.UpdatedAt.HasValue ? ticket.UpdatedAt.Value.ToLocalTime().ToString("dd/MM/yyyy HH:mm") : "-")}");
 
         var bytes = Encoding.UTF8.GetPreamble().Concat(Encoding.UTF8.GetBytes(csv.ToString())).ToArray();
-        return File(bytes, "text/csv; charset=utf-8", $"chamado-{ticket.Id}.csv");
+        return File(bytes, "application/vnd.ms-excel; charset=utf-8", $"chamado-{ticket.Id}.csv");
     }
 
     public async Task<IActionResult> Create()
@@ -246,12 +241,12 @@ public class SupportTicketsController(ApplicationDbContext context) : Controller
         return status switch
         {
             TicketResolutionStatus.Open => "Em aberto",
-            TicketResolutionStatus.No => "Não",
-            TicketResolutionStatus.Yes => "Sim",
+            TicketResolutionStatus.No => "Incompleto",
+            TicketResolutionStatus.Yes => "Completo",
             TicketResolutionStatus.InProgress => "Em andamento",
             _ => status.ToString()
         };
-    }
+    }   
 
     private static string EscapeCsv(string? value)
     {

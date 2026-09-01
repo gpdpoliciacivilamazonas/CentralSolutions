@@ -26,6 +26,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    document.querySelectorAll('[data-print-ticket]').forEach((button) => {
+        button.addEventListener('click', () => {
+            window.print();
+        });
+    });
+
     document.querySelectorAll('[data-department-combobox]').forEach((combobox) => {
         const input = combobox.querySelector('[data-combobox-input]');
         const toggle = combobox.querySelector('[data-combobox-toggle]');

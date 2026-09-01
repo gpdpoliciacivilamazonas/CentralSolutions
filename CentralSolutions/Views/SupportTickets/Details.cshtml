@@ -45,10 +45,10 @@
         </div>
     </div>
 
-    <div class="d-flex justify-content-end gap-2 mt-4 no-print">
+    <div class="ticket-actions d-flex justify-content-end gap-2 mt-4 no-print">
         <a asp-action="Index" class="btn btn-outline-secondary">Voltar</a>
-        <button type="button" class="btn btn-outline-primary" onclick="window.print()">Imprimir</button>
-        <a asp-action="Export" asp-route-id="@Model.Id" class="btn btn-outline-success">Exportar Excel</a>
+        <button type="button" class="btn btn-outline-primary" onclick="window.print()" data-print-ticket>Imprimir</button>
+        <a href="@Url.Action("Export", "SupportTickets", new { id = Model.Id })" class="btn btn-outline-success" download="chamado-@(Model.Id).csv">Exportar Excel</a>
         <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary px-4">Editar</a>
     </div>
 </div>
@@ -70,9 +70,10 @@
         return status switch
         {
             TicketResolutionStatus.Open => "Em aberto",
-            TicketResolutionStatus.No => "Não",
-            TicketResolutionStatus.Yes => "Sim",
-            _ => status.ToString()
+            TicketResolutionStatus.InProgress => "Em andamento",
+            TicketResolutionStatus.No => "Incompleto",
+            TicketResolutionStatus.Yes => "Completo",
+            _ => "Em aberto"
         };
     }
 }
