@@ -1,21 +1,21 @@
-﻿# CentralSolutions
+# CentralSolutions
 
-CentralSolutions Ã© uma aplicaÃ§Ã£o web em .NET 8 para controle de chamados por setor. Ela substitui o controle em planilhas por uma interface web organizada, com cadastro, ediÃ§Ã£o, consulta, exclusÃ£o e filtros de chamados.
+CentralSolutions é uma aplicação web em .NET 8 para controle de chamados por setor. Ela substitui o controle em planilhas por uma interface web organizada, com cadastro, edição, consulta, exclusão e filtros de chamados.
 
-A aplicaÃ§Ã£o utiliza ASP.NET Core MVC, Entity Framework Core e banco de dados SQLite.
+A aplicação utiliza ASP.NET Core MVC, Entity Framework Core e banco de dados SQLite.
 
 ## Funcionalidades
 
 - Cadastro de chamados por setor.
-- Cadastro e manutenÃ§Ã£o de setores no banco de dados.
+- Cadastro e manutenção de setores no banco de dados.
 - Registro do tipo de chamado.
-- DefiniÃ§Ã£o do tÃ©cnico responsÃ¡vel.
-- Registro da resoluÃ§Ã£o.
-- Controle da situaÃ§Ã£o do chamado: `Em aberto`, `NÃ£o` ou `Sim`.
-- Filtro por setor e situaÃ§Ã£o.
+- Definição do técnico responsável.
+- Registro da resolução.
+- Controle da situação do chamado: `Em aberto`, `Não` ou `Sim`.
+- Filtro por setor e situação.
 - Interface web responsiva com Bootstrap.
 - Banco SQLite local.
-- Suporte para execuÃ§Ã£o em Docker com volume persistente.
+- Suporte para execução em Docker com volume persistente.
 
 ## Tecnologias
 
@@ -30,33 +30,33 @@ A aplicaÃ§Ã£o utiliza ASP.NET Core MVC, Entity Framework Core e banco de dad
 
 ```text
 CentralSolutions/
-â”œâ”€â”€ Controllers/
-â”‚   â”œâ”€â”€ DepartmentsController.cs
-â”‚   â””â”€â”€ SupportTicketsController.cs
-â”œâ”€â”€ Data/
-â”‚   â””â”€â”€ ApplicationDbContext.cs
-â”œâ”€â”€ Models/
-â”‚   â”œâ”€â”€ Department.cs
-â”‚   â””â”€â”€ SupportTicket.cs
-â”œâ”€â”€ Views/
-â”‚   â”œâ”€â”€ Home/
-â”‚   â”œâ”€â”€ Departments/
-â”‚   â”œâ”€â”€ Shared/
-â”‚   â””â”€â”€ SupportTickets/
-â”œâ”€â”€ wwwroot/
-â”‚   â”œâ”€â”€ css/
-â”‚   â””â”€â”€ img/
-â”œâ”€â”€ Migrations/
-â”œâ”€â”€ Dockerfile
-â”œâ”€â”€ Program.cs
-â””â”€â”€ appsettings.json
+├── Controllers/
+│   ├── DepartmentsController.cs
+│   └── SupportTicketsController.cs
+├── Data/
+│   └── ApplicationDbContext.cs
+├── Models/
+│   ├── Department.cs
+│   └── SupportTicket.cs
+├── Views/
+│   ├── Home/
+│   ├── Departments/
+│   ├── Shared/
+│   └── SupportTickets/
+├── wwwroot/
+│   ├── css/
+│   └── img/
+├── Migrations/
+├── Dockerfile
+├── Program.cs
+└── appsettings.json
 ```
 
 ## Como rodar localmente
 
-### 1. Restaurar dependÃªncias
+### 1. Restaurar dependências
 
-Na raiz da soluÃ§Ã£o, execute:
+Na raiz da solução, execute:
 
 ```powershell
 dotnet restore
@@ -64,7 +64,7 @@ dotnet restore
 
 ### 2. Aplicar o banco SQLite
 
-O projeto usa uma ferramenta local do Entity Framework. Se estiver em uma mÃ¡quina nova, restaure as ferramentas:
+O projeto usa uma ferramenta local do Entity Framework. Se estiver em uma máquina nova, restaure as ferramentas:
 
 ```powershell
 dotnet tool restore
@@ -82,7 +82,7 @@ Isso cria ou atualiza o banco SQLite configurado na connection string:
 "DefaultConnection": "Data Source=central_solutions.db"
 ```
 
-### 3. Executar a aplicaÃ§Ã£o
+### 3. Executar a aplicação
 
 ```powershell
 dotnet run --project CentralSolutions\CentralSolutions.csproj
@@ -90,7 +90,7 @@ dotnet run --project CentralSolutions\CentralSolutions.csproj
 
 Depois acesse a URL exibida no terminal.
 
-Normalmente serÃ¡ algo como:
+Normalmente será algo como:
 
 ```text
 https://localhost:5001
@@ -105,13 +105,13 @@ http://localhost:5000
 ## Como rodar no Visual Studio
 
 1. Abra `CentralSolutions.sln`.
-2. Defina `CentralSolutions` como projeto de inicializaÃ§Ã£o.
+2. Defina `CentralSolutions` como projeto de inicialização.
 3. Pressione `F5` ou clique em **Iniciar**.
 4. Acesse o menu **Chamados**.
 
-## GestÃ£o de setores
+## Gestão de setores
 
-Os setores nÃ£o ficam hardcoded no cÃ³digo. Eles sÃ£o armazenados na tabela `departments` do SQLite e carregados dinamicamente nas telas de chamados.
+Os setores não ficam hardcoded no código. Eles são armazenados na tabela `departments` do SQLite e carregados dinamicamente nas telas de chamados.
 
 Pelo sistema, acesse o menu **Setores** para:
 
@@ -121,9 +121,9 @@ Pelo sistema, acesse o menu **Setores** para:
 - ativar ou inativar setores;
 - excluir setores.
 
-Setores inativos deixam de aparecer para novos chamados, mas chamados antigos mantÃªm o nome do setor que foi salvo no registro.
+Setores inativos deixam de aparecer para novos chamados, mas chamados antigos mantêm o nome do setor que foi salvo no registro.
 
-TambÃ©m Ã© possÃ­vel atualizar setores diretamente por SQL. Exemplos:
+Também é possível atualizar setores diretamente por SQL. Exemplos:
 
 ```sql
 UPDATE departments
@@ -136,7 +136,7 @@ INSERT INTO departments (Name, IsActive, CreatedAt)
 VALUES ('NOVO SETOR', 1, CURRENT_TIMESTAMP);
 ```
 
-Se tambÃ©m quiser renomear setores jÃ¡ gravados em chamados existentes, atualize a tabela `support_tickets`:
+Se também quiser renomear setores já gravados em chamados existentes, atualize a tabela `support_tickets`:
 
 ```sql
 UPDATE support_tickets
@@ -146,13 +146,13 @@ WHERE Department = 'NOME ANTIGO';
 
 ## Como rodar com Docker
 
-A aplicaÃ§Ã£o jÃ¡ possui os arquivos necessÃ¡rios para containerizaÃ§Ã£o:
+A aplicação já possui os arquivos necessários para containerização:
 
 - `CentralSolutions/Dockerfile`
 - `docker-compose.yml`
 - `.dockerignore`
 
-No Docker, o banco SQLite fica em um volume persistente, para nÃ£o ser perdido ao recriar o container.
+No Docker, o banco SQLite fica em um volume persistente, para não ser perdido ao recriar o container.
 
 Caminho do banco dentro do container:
 
@@ -162,7 +162,7 @@ Caminho do banco dentro do container:
 
 ### 1. Instalar/abrir Docker Desktop
 
-Antes de executar os comandos, confirme que o Docker Desktop estÃ¡ instalado e em execuÃ§Ã£o.
+Antes de executar os comandos, confirme que o Docker Desktop está instalado e em execução.
 
 Verifique no terminal:
 
@@ -170,15 +170,15 @@ Verifique no terminal:
 docker --version
 ```
 
-### 2. Subir a aplicaÃ§Ã£o
+### 2. Subir a aplicação
 
-Na raiz da soluÃ§Ã£o, execute:
+Na raiz da solução, execute:
 
 ```powershell
 docker compose up --build
 ```
 
-A aplicaÃ§Ã£o ficarÃ¡ disponÃ­vel em:
+A aplicação ficará disponível em:
 
 ```text
 http://localhost:8080
@@ -196,7 +196,7 @@ docker compose up --build -d
 docker compose logs -f
 ```
 
-### 5. Parar a aplicaÃ§Ã£o
+### 5. Parar a aplicação
 
 ```powershell
 docker compose down
@@ -204,23 +204,23 @@ docker compose down
 
 ### 6. Parar e apagar o banco/volume
 
-Use apenas se quiser remover tambÃ©m os dados persistidos:
+Use apenas se quiser remover também os dados persistidos:
 
 ```powershell
 docker compose down -v
 ```
 
-## ConfiguraÃ§Ã£o Docker
+## Configuração Docker
 
-O `docker-compose.yml` define a connection string por variÃ¡vel de ambiente:
+O `docker-compose.yml` define a connection string por variável de ambiente:
 
 ```yaml
 ConnectionStrings__DefaultConnection: Data Source=/app/data/central_solutions.db
 ```
 
-Esse formato sobrescreve a configuraÃ§Ã£o do `appsettings.json` dentro do container.
+Esse formato sobrescreve a configuração do `appsettings.json` dentro do container.
 
-O volume usado para persistÃªncia Ã©:
+O volume usado para persistência é:
 
 ```yaml
 volumes:
@@ -229,16 +229,16 @@ volumes:
 
 ## Migrations no Docker
 
-A aplicaÃ§Ã£o executa automaticamente as migrations ao iniciar:
+A aplicação executa automaticamente as migrations ao iniciar:
 
 ```csharp
 dbContext.Database.Migrate();
 ```
 
-Assim, ao subir o container pela primeira vez, a tabela de chamados Ã© criada automaticamente no SQLite.
+Assim, ao subir o container pela primeira vez, a tabela de chamados é criada automaticamente no SQLite.
 
-## ObservaÃ§Ãµes
+## Observações
 
-- O banco local usado fora do Docker Ã© diferente do banco usado dentro do Docker.
-- Para preservar dados no Docker, nÃ£o remova o volume `centralsolutions-data`.
+- O banco local usado fora do Docker é diferente do banco usado dentro do Docker.
+- Para preservar dados no Docker, não remova o volume `centralsolutions-data`.
 - Para trocar o caminho do banco, altere a connection string no `appsettings.json` ou no `docker-compose.yml`.
