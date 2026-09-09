@@ -15,14 +15,27 @@
 
 <div class="content-card mb-4">
     <form asp-action="Index" method="get" class="row g-3 align-items-end">
-        <div class="col-md-5">
-            <label class="form-label" for="department">Setor</label>
-            <select id="department" name="department" class="form-select" asp-items="ViewBag.Departments">
-                <option value="">Todos</option>
-            </select>
+        <div class="col-md-2">
+            <label class="form-label" for="ticketNumber">Nº Chamado</label>
+            <input id="ticketNumber" name="ticketNumber" type="number" min="1" class="form-control" value="@ViewBag.TicketNumber" placeholder="Ex.: 15" />
         </div>
         <div class="col-md-4">
-            <label class="form-label" for="status">Resolvido?</label>
+            <label class="form-label" for="department">Setor</label>
+            <div class="department-combobox" data-department-combobox>
+                <div class="input-group">
+                    <input id="department" name="department" class="form-control" value="@ViewBag.SelectedDepartment" placeholder="Digite para buscar o setor" autocomplete="off" data-combobox-input />
+                    <button type="button" class="btn btn-outline-secondary" aria-label="Ver setores" data-combobox-toggle>&#9662;</button>
+                </div>
+                <div class="combobox-menu" data-combobox-menu>
+                    @foreach (var department in ViewBag.Departments)
+                    {
+                        <button type="button" class="combobox-option" data-combobox-option data-value="@department.Value">@department.Text</button>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label" for="status">Status</label>
             <select id="status" name="status" class="form-select" asp-items="ViewBag.Statuses">
                 <option value="">Todos</option>
             </select>
@@ -39,11 +52,15 @@
         <table class="table table-hover align-middle mb-0 app-table">
             <thead>
                 <tr>
+                    <th>@Html.DisplayNameFor(model => model.Id)</th>
                     <th>@Html.DisplayNameFor(model => model.Department)</th>
                     <th>@Html.DisplayNameFor(model => model.TicketType)</th>
                     <th>@Html.DisplayNameFor(model => model.ResponsibleTechnician)</th>
-                    <th>@Html.DisplayNameFor(model => model.Resolution)</th>
+                    <th>@Html.DisplayNameFor(model => model.Problem)</th>
+                    <th>@Html.DisplayNameFor(model => model.Solution)</th>
                     <th>@Html.DisplayNameFor(model => model.ResolutionStatus)</th>
+                    <th>@Html.DisplayNameFor(model => model.CreatedAt)</th>
+                    <th>@Html.DisplayNameFor(model => model.UpdatedAt)</th>
                     <th class="text-end">Ações</th>
                 </tr>
             </thead>
@@ -51,11 +68,15 @@
             @foreach (var item in Model)
             {
                 <tr>
+                    <td><span class="ticket-number">#@item.Id</span></td>
                     <td><strong>@Html.DisplayFor(modelItem => item.Department)</strong></td>
                     <td>@Html.DisplayFor(modelItem => item.TicketType)</td>
                     <td>@(item.ResponsibleTechnician ?? "-")</td>
-                    <td class="text-muted">@(item.Resolution ?? "-")</td>
+                    <td class="text-muted">@item.Problem</td>
+                    <td class="text-muted">@(item.Solution ?? "-")</td>
                     <td><span class="status-badge @GetStatusClass(item.ResolutionStatus)">@GetStatusName(item.ResolutionStatus)</span></td>
+                    <td class="text-muted text-nowrap">@item.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                    <td class="text-muted text-nowrap">@(item.UpdatedAt?.ToLocalTime().ToString("dd/MM/yyyy HH:mm") ?? "-")</td>
                     <td class="text-end text-nowrap">
                         <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">Editar</a>
                         <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary">Detalhes</a>
@@ -90,9 +111,10 @@
         return status switch
         {
             TicketResolutionStatus.Open => "Em aberto",
-            TicketResolutionStatus.No => "Não",
-            TicketResolutionStatus.Yes => "Sim",
-            _ => status.ToString()
+            TicketResolutionStatus.InProgress => "Em andamento",
+            TicketResolutionStatus.No => "Incompleto",
+            TicketResolutionStatus.Yes => "Completo",
+            _ => "Em aberto"
         };
     }
 }

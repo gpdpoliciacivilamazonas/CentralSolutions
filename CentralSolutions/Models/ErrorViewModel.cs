@@ -1,4 +1,4 @@
-namespace CentralSolutions.Models
+﻿namespace CentralSolutions.Models
 {
     public class ErrorViewModel
     {

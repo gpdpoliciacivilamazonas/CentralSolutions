@@ -1,0 +1,106 @@
+﻿@model IEnumerable<Department>
+
+@{
+    ViewData["Title"] = "Setores";
+    var currentPage = (int)ViewBag.CurrentPage;
+    var totalPages = (int)ViewBag.TotalPages;
+    var totalItems = (int)ViewBag.TotalItems;
+    var pageSize = (int)ViewBag.PageSize;
+    var firstItem = totalItems == 0 ? 0 : ((currentPage - 1) * pageSize) + 1;
+    var lastItem = Math.Min(currentPage * pageSize, totalItems);
+}
+
+<div class="page-heading">
+    <div>
+        <span class="eyebrow text-primary">Cadastros</span>
+        <h1>Setores</h1>
+        <p>Gerencie os setores disponíveis nos chamados.</p>
+    </div>
+    <a asp-action="Create" class="btn btn-primary btn-lg shadow-sm">Novo setor</a>
+</div>
+
+<div class="content-card mb-4">
+    <form asp-action="Index" method="get" class="row g-3 align-items-end">
+        <div class="col-md-9">
+            <label class="form-label" for="search">Buscar setor</label>
+            <input id="search" name="search" value="@ViewBag.Search" class="form-control" placeholder="Digite parte do nome do setor" />
+        </div>
+        <div class="col-md-3 d-flex gap-2">
+            <button type="submit" class="btn btn-outline-primary flex-fill">Buscar</button>
+            <a asp-action="Index" class="btn btn-outline-secondary flex-fill">Limpar</a>
+        </div>
+    </form>
+</div>
+
+<div class="content-card p-0 overflow-hidden">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0 app-table">
+            <thead>
+                <tr>
+                    <th>@Html.DisplayNameFor(model => model.Name)</th>
+                    <th>@Html.DisplayNameFor(model => model.IsActive)</th>
+                    <th>@Html.DisplayNameFor(model => model.UpdatedAt)</th>
+                    <th class="text-end">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td><strong>@Html.DisplayFor(modelItem => item.Name)</strong></td>
+                    <td>
+                        @if (item.IsActive)
+                        {
+                            <span class="status-badge status-yes">Ativo</span>
+                        }
+                        else
+                        {
+                            <span class="status-badge status-no">Inativo</span>
+                        }
+                    </td>
+                    <td class="text-muted">@(item.UpdatedAt?.ToLocalTime().ToString("dd/MM/yyyy HH:mm") ?? "-")</td>
+                    <td class="text-end text-nowrap">
+                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">Editar</a>
+                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger">Excluir</a>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info mt-4">Nenhum setor encontrado.</div>
+}
+else
+{
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mt-4">
+        <div class="text-muted">
+            Exibindo @firstItem-@lastItem de @totalItems setores
+        </div>
+
+        @if (totalPages > 1)
+        {
+            <nav aria-label="Paginação de setores">
+                <ul class="pagination mb-0">
+                    <li class="page-item @(currentPage == 1 ? "disabled" : string.Empty)">
+                        <a class="page-link" asp-action="Index" asp-route-search="@ViewBag.Search" asp-route-page="@(currentPage - 1)">Anterior</a>
+                    </li>
+
+                    @for (var pageNumber = 1; pageNumber <= totalPages; pageNumber++)
+                    {
+                        <li class="page-item @(pageNumber == currentPage ? "active" : string.Empty)">
+                            <a class="page-link" asp-action="Index" asp-route-search="@ViewBag.Search" asp-route-page="@pageNumber">@pageNumber</a>
+                        </li>
+                    }
+
+                    <li class="page-item @(currentPage == totalPages ? "disabled" : string.Empty)">
+                        <a class="page-link" asp-action="Index" asp-route-search="@ViewBag.Search" asp-route-page="@(currentPage + 1)">Próxima</a>
+                    </li>
+                </ul>
+            </nav>
+        }
+    </div>
+}

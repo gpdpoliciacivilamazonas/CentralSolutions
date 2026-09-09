@@ -1,4 +1,4 @@
-@model SupportTicket
+﻿@model SupportTicket
 
 @{
     ViewData["Title"] = "Excluir chamado";
@@ -24,6 +24,10 @@
         <dd class="col-sm-8">@Html.DisplayFor(model => model.TicketType)</dd>
         <dt class="col-sm-4">@Html.DisplayNameFor(model => model.ResponsibleTechnician)</dt>
         <dd class="col-sm-8">@(Model.ResponsibleTechnician ?? "-")</dd>
+        <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Problem)</dt>
+        <dd class="col-sm-8">@Model.Problem</dd>
+        <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Solution)</dt>
+        <dd class="col-sm-8">@(Model.Solution ?? "-")</dd>
         <dt class="col-sm-4">@Html.DisplayNameFor(model => model.ResolutionStatus)</dt>
         <dd class="col-sm-8"><span class="status-badge @GetStatusClass(Model.ResolutionStatus)">@GetStatusName(Model.ResolutionStatus)</span></dd>
     </dl>

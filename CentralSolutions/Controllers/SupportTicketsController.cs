@@ -3,69 +3,35 @@ using CentralSolutions.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System.Text;
 
 namespace CentralSolutions.Controllers;
 
 public class SupportTicketsController(ApplicationDbContext context) : Controller
 {
-    private static readonly string[] Departments =
-    [
-        "APOIO",
-        "ARMAMENTO",
-        "ARQUIVO",
-        "CAF",
-        "CAPACITAÇÃO",
-        "CHEFIA",
-        "COMPRAS",
-        "CONTRATOS",
-        "CORE",
-        "CVA",
-        "DAF",
-        "DCA",
-        "DENARC",
-        "DEPLAN",
-        "DERCC",
-        "DGA",
-        "DIPC",
-        "DPI",
-        "DPM",
-        "DRAD",
-        "DTI",
-        "ENGENHARIA",
-        "ESTATISTICA",
-        "GA",
-        "GEPAT",
-        "GETRAN",
-        "GMF",
-        "GOFIN",
-        "GP",
-        "IDENTIFICAÇÃO",
-        "IMPRENSA",
-        "JUNTA MÉDICA",
-        "JURÍDICO",
-        "NURATI",
-        "OUVIDORIA",
-        "PROMOÇÃO",
-        "PROTOCOLO",
-        "UAIP",
-        "DELEGACIA EXTERNA"
-    ];
-
     private static readonly string[] TicketTypes =
     [
         "Rede",
-        "Hardware",
+        "Computador",
+        "Impressora",
+        "Periféricos",
+        "E-mail",
         "Sistema",
         "Outros"
     ];
 
-    public async Task<IActionResult> Index(string? department, TicketResolutionStatus? status)
+    public async Task<IActionResult> Index(int? ticketNumber, string? department, TicketResolutionStatus? status)
     {
         IQueryable<SupportTicket> tickets = context.SupportTickets.AsNoTracking();
 
+        if (ticketNumber.HasValue)
+        {
+            tickets = tickets.Where(ticket => ticket.Id == ticketNumber.Value);
+        }
+
         if (!string.IsNullOrWhiteSpace(department))
         {
-            tickets = tickets.Where(ticket => ticket.Department == department);
+            tickets = tickets.Where(ticket => ticket.Department.Contains(department));
         }
 
         if (status.HasValue)
@@ -73,12 +39,13 @@ public class SupportTicketsController(ApplicationDbContext context) : Controller
             tickets = tickets.Where(ticket => ticket.ResolutionStatus == status.Value);
         }
 
-        ViewBag.Departments = GetDepartmentSelectList(department);
+        ViewBag.Departments = await GetDepartmentSelectList(department);
+        ViewBag.TicketNumber = ticketNumber;
+        ViewBag.SelectedDepartment = department;
         ViewBag.Statuses = GetStatusSelectList(status);
 
         return View(await tickets
-            .OrderBy(ticket => ticket.Department)
-            .ThenByDescending(ticket => ticket.CreatedAt)
+            .OrderByDescending(ticket => ticket.Id)
             .ToListAsync());
     }
 
@@ -101,19 +68,47 @@ public class SupportTicketsController(ApplicationDbContext context) : Controller
         return View(ticket);
     }
 
-    public IActionResult Create()
+    [HttpGet("SupportTickets/{id:int}/exportar-excel")]
+    public async Task<IActionResult> Export(int id)
     {
-        PopulateSelectLists();
+        var ticket = await context.SupportTickets
+            .AsNoTracking()
+            .FirstOrDefaultAsync(item => item.Id == id);
+
+        if (ticket is null)
+        {
+            return NotFound();
+        }
+
+        var csv = new StringBuilder();
+        csv.AppendLine("Campo;Valor");
+        csv.AppendLine($"Nº;{ticket.Id}");
+        csv.AppendLine($"Setor;{EscapeCsv(ticket.Department)}");
+        csv.AppendLine($"Chamado;{EscapeCsv(ticket.TicketType)}");
+        csv.AppendLine($"Responsável;{EscapeCsv(ticket.ResponsibleTechnician)}");
+        csv.AppendLine($"Problema;{EscapeCsv(ticket.Problem)}");
+        csv.AppendLine($"Solução;{EscapeCsv(ticket.Solution)}");
+        csv.AppendLine($"Status;{EscapeCsv(GetStatusName(ticket.ResolutionStatus))}");
+        csv.AppendLine($"Criado em;{ticket.CreatedAt.ToLocalTime():dd/MM/yyyy HH:mm}");
+        csv.AppendLine($"Atualizado em;{(ticket.UpdatedAt.HasValue ? ticket.UpdatedAt.Value.ToLocalTime().ToString("dd/MM/yyyy HH:mm") : "-")}");
+
+        var bytes = Encoding.UTF8.GetPreamble().Concat(Encoding.UTF8.GetBytes(csv.ToString())).ToArray();
+        return File(bytes, "application/vnd.ms-excel; charset=utf-8", $"chamado-{ticket.Id}.csv");
+    }
+
+    public async Task<IActionResult> Create()
+    {
+        await PopulateSelectLists();
         return View(new SupportTicket());
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create([Bind("Department,TicketType,ResponsibleTechnician,Resolution,ResolutionStatus")] SupportTicket ticket)
+    public async Task<IActionResult> Create([Bind("Department,TicketType,ResponsibleTechnician,Problem,Solution,ResolutionStatus")] SupportTicket ticket)
     {
         if (!ModelState.IsValid)
         {
-            PopulateSelectLists(ticket.Department, ticket.TicketType, ticket.ResolutionStatus);
+            await PopulateSelectLists(ticket.Department, ticket.TicketType, ticket.ResolutionStatus);
             return View(ticket);
         }
 
@@ -138,13 +133,13 @@ public class SupportTicketsController(ApplicationDbContext context) : Controller
             return NotFound();
         }
 
-        PopulateSelectLists(ticket.Department, ticket.TicketType, ticket.ResolutionStatus);
+        await PopulateSelectLists(ticket.Department, ticket.TicketType, ticket.ResolutionStatus);
         return View(ticket);
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(int id, [Bind("Id,Department,TicketType,ResponsibleTechnician,Resolution,ResolutionStatus,CreatedAt")] SupportTicket ticket)
+    public async Task<IActionResult> Edit(int id, [Bind("Id,Department,TicketType,ResponsibleTechnician,Problem,Solution,ResolutionStatus,CreatedAt")] SupportTicket ticket)
     {
         if (id != ticket.Id)
         {
@@ -153,7 +148,7 @@ public class SupportTicketsController(ApplicationDbContext context) : Controller
 
         if (!ModelState.IsValid)
         {
-            PopulateSelectLists(ticket.Department, ticket.TicketType, ticket.ResolutionStatus);
+            await PopulateSelectLists(ticket.Department, ticket.TicketType, ticket.ResolutionStatus);
             return View(ticket);
         }
 
@@ -215,16 +210,23 @@ public class SupportTicketsController(ApplicationDbContext context) : Controller
         return await context.SupportTickets.AnyAsync(ticket => ticket.Id == id);
     }
 
-    private void PopulateSelectLists(string? selectedDepartment = null, string? selectedTicketType = null, TicketResolutionStatus? selectedStatus = null)
+    private async Task PopulateSelectLists(string? selectedDepartment = null, string? selectedTicketType = null, TicketResolutionStatus? selectedStatus = null)
     {
-        ViewBag.Departments = GetDepartmentSelectList(selectedDepartment);
+        ViewBag.Departments = await GetDepartmentSelectList(selectedDepartment);
         ViewBag.TicketTypes = TicketTypes.Select(type => new SelectListItem(type, type, type == selectedTicketType)).ToList();
         ViewBag.Statuses = GetStatusSelectList(selectedStatus);
     }
 
-    private static List<SelectListItem> GetDepartmentSelectList(string? selectedDepartment)
+    private async Task<List<SelectListItem>> GetDepartmentSelectList(string? selectedDepartment)
     {
-        return Departments.Select(department => new SelectListItem(department, department, department == selectedDepartment)).ToList();
+        var departments = await context.Departments
+            .AsNoTracking()
+            .Where(department => department.IsActive || department.Name == selectedDepartment)
+            .OrderBy(department => department.Name)
+            .Select(department => department.Name)
+            .ToListAsync();
+
+        return departments.Select(department => new SelectListItem(department, department, department == selectedDepartment)).ToList();
     }
 
     private static List<SelectListItem> GetStatusSelectList(TicketResolutionStatus? selectedStatus)
@@ -239,9 +241,22 @@ public class SupportTicketsController(ApplicationDbContext context) : Controller
         return status switch
         {
             TicketResolutionStatus.Open => "Em aberto",
-            TicketResolutionStatus.No => "Não",
-            TicketResolutionStatus.Yes => "Sim",
+            TicketResolutionStatus.No => "Incompleto",
+            TicketResolutionStatus.Yes => "Completo",
+            TicketResolutionStatus.InProgress => "Em andamento",
             _ => status.ToString()
         };
+    }   
+
+    private static string EscapeCsv(string? value)
+    {
+        value ??= string.Empty;
+
+        if (value.Contains(';') || value.Contains('"') || value.Contains('\n') || value.Contains('\r'))
+        {
+            return $"\"{value.Replace("\"", "\"\"")}\"";
+        }
+
+        return value;
     }
 }
