@@ -1,70 +1,79 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-<head>
+  <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - CentralSolutions</title>
     <script>
-        document.documentElement.dataset.theme = localStorage.getItem('theme') || 'light';
+      document.documentElement.dataset.theme = localStorage.getItem('theme') || 'light';
     </script>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/CentralSolutions.styles.css" asp-append-version="true" />
-</head>
-<body>
+  </head>
+  <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark app-navbar mb-4">
-            <div class="container">
-                <a class="navbar-brand fw-bold d-flex align-items-center gap-2" asp-area="" asp-controller="Home" asp-action="Index">
-                    <img src="~/img/1000261363.jpg" alt="Brasão Polícia Civil AM" class="navbar-crest" />
-                    <span>CentralSolutions</span>
-                </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+      <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark app-navbar mb-4">
+        <div class="container">
+          <a class="navbar-brand fw-bold d-flex align-items-center gap-2" asp-area="" asp-controller="Home" asp-action="Index">
+            <img src="~/img/1000261363.jpg" alt="Brasão Polícia Civil AM" class="navbar-crest" />
+            <span>CentralSolutions</span>
+          </a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+            <ul class="navbar-nav ms-auto gap-sm-2">
+              @if (User.Identity?.IsAuthenticated == true)
+              {
+              <li class="nav-item">
+                <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Início</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" asp-area="" asp-controller="SupportTickets" asp-action="Index">Chamados</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" asp-area="" asp-controller="Departments" asp-action="Index">Setores</a>
+              </li>
+              <li class="nav-item">
+                <form asp-controller="User" asp-action="Logout" method="post" class="d-inline">
+                  <button type="submit" class="nav-link logout-button">
+                    Sair
+                  </button>
+                </form>
+              </li>
+              }
+              <li class="nav-item">
+                <button type="button" class="theme-toggle" data-theme-toggle aria-label="Alternar modo noturno">
+                  <span data-theme-icon>🌙</span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav ms-auto gap-sm-2">
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Início</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="SupportTickets" asp-action="Index">Chamados</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Departments" asp-action="Index">Setores</a>
-                        </li>
-                        <li class="nav-item">
-                            <button type="button" class="theme-toggle" data-theme-toggle aria-label="Alternar modo noturno">
-                                <span data-theme-icon>🌙</span>
-                            </button>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </nav>
     </header>
     <div class="container-fluid app-shell">
-        <main role="main" class="pb-4">
-            @RenderBody()
-        </main>
+      <main role="main" class="pb-4">
+        @RenderBody()
+      </main>
     </div>
-
     <footer class="footer app-footer text-muted">
-        <div class="container-fluid app-shell app-footer-content">
-            <div class="d-flex align-items-center gap-3">
-                <img src="~/img/1000261363.jpg" alt="Brasão Polícia Civil AM" class="footer-crest" />
-                <div>
-                    <strong>Gerência de processamento de dados</strong>
-                    <div>(92) 936677780 · gpd@policiacivil.am.gov.br</div>
-                </div>
-            </div>
-            <span>&copy; 2026 - CentralSolutions</span>
+      <div class="container-fluid app-shell app-footer-content">
+        <div class="d-flex align-items-center gap-3">
+          <img src="~/img/1000261363.jpg" alt="Brasão Polícia Civil AM" class="footer-crest" />
+          <div>
+            <strong>Gerência de processamento de dados</strong>
+            <div>(92) 936677780 · gpd@policiacivil.am.gov.br</div>
+          </div>
         </div>
+        <span>&copy; 2026 - CentralSolutions</span>
+      </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
-</body>
+  </body>
 </html>

@@ -1,11 +1,10 @@
 using System.ComponentModel.DataAnnotations;
+using CentralSolutions.Models;
 
-namespace CentralSolutions.Models;
+namespace CentralSolutions.ViewModels;
 
-public class SupportTicket
+public class SupportTicketPublicViewModel
 {
-	public Guid Id { get; set; }
-
 	[Display(Name = "Nº")]
 	public int TicketNumber { get; set; }
 
@@ -41,19 +40,4 @@ public class SupportTicket
 
 	[Display(Name = "Atualizado em")]
 	public DateTime? UpdatedAt { get; set; }
-}
-
-public enum TicketResolutionStatus
-{
-	[Display(Name = "Em aberto")]
-	Open = 0,
-
-	[Display(Name = "Em andamento")]
-	InProgress = 1,
-
-	[Display(Name = "Incompleto")]
-	No = 2,
-
-	[Display(Name = "Completo")]
-	Yes = 3,
 }
