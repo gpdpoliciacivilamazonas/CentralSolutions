@@ -194,7 +194,7 @@ public class SupportTicketsController(ApplicationDbContext context) : Controller
 
 	[HttpPost]
 	[ValidateAntiForgeryToken]
-	public async Task<IActionResult> Edit(Guid id, [Bind("Id,Department,TicketType,ResponsibleTechnician,Problem,Solution,ResolutionStatus,CreatedAt")] SupportTicket ticket)
+	public async Task<IActionResult> Edit(Guid id, [Bind("Id,TicketNumber,Department,TicketType,ResponsibleTechnician,Problem,Solution,ResolutionStatus,CreatedAt")] SupportTicket ticket)
 	{
 		if (id != ticket.Id)
 		{
