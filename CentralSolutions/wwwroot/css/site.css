@@ -740,7 +740,15 @@ html[data-theme="light"] .btn-outline-secondary {
 	}
 }
 
+.print-stamp {
+	display: none;
+}
+
 @media print {
+	* {
+		font-size: 20px !important;
+	}
+
 	body {
 		background: #fff;
 		margin: 0;
@@ -759,10 +767,27 @@ html[data-theme="light"] .btn-outline-secondary {
 	}
 
 	.printable-area {
+		color: black !important;
 		border: 0;
 		box-shadow: none;
 		max-width: none;
 		padding: 0 0 6rem 0;
+
+		.col-sm-8 {
+			color: black !important;
+		}
+	}
+
+	.print-stamp {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		width: 500px;
+		margin: 50px auto 0;
+		padding: 15px 20px;
+		border: 2px solid #000;
+		text-align: center;
 	}
 
 	.print-footer {

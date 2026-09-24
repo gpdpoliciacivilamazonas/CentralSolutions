@@ -18,8 +18,8 @@ ViewData["Title"] = "Detalhes do chamado";
     <span class="status-badge @GetStatusClass(Model.ResolutionStatus)">@GetStatusName(Model.ResolutionStatus)</span>
   </div>
   <dl class="row detail-list">
-    <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Id)</dt>
-    <dd class="col-sm-8">#@Model.Id</dd>
+    <dt class="col-sm-4 no-print">@Html.DisplayNameFor(model => model.Id)</dt>
+    <dd class="col-sm-8 no-print">#@Model.Id</dd>
     <dt class="col-sm-4">@Html.DisplayNameFor(model => model.ResponsibleTechnician)</dt>
     <dd class="col-sm-8">@(Model.ResponsibleTechnician ?? "-")</dd>
     <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Problem)</dt>
@@ -33,15 +33,16 @@ ViewData["Title"] = "Detalhes do chamado";
   </dl>
   <div class="print-footer">
     <img src="~/img/1000261363.jpg" alt="Brasão Polícia Civil AM" class="print-footer-crest" />
-    <div>
-      <strong>Gerência de processamento de dados</strong>
-      <span>(92) 936677780</span>
+    <div class="print-stamp">
+      <strong>Recebido e Conferido por Gerência de Processamento de Dados - DAF/PCAM</strong>
+      <span>(92) 93667-7780</span>
       <span>gpd@policiacivil.am.gov.br</span>
+      <span>Data: <span id="print-date"></span></span>
     </div>
   </div>
   <div class="ticket-actions d-flex justify-content-end gap-2 mt-4 no-print">
     <a asp-action="Index" class="btn btn-outline-secondary">Voltar</a>
-    <button type="button" class="btn btn-outline-primary" onclick="window.print()" data-print-ticket>Imprimir</button>
+    <button type="button" class="btn btn-outline-primary" onclick="printTicket()" data-print-ticket>Imprimir</button>
     <a href="@Url.Action("Export", "SupportTickets", new { id = Model.Id })" class="btn btn-outline-success"
 			download="chamado-@(Model.TicketNumber).csv">Exportar Excel</a>
     <button type="button" class="btn btn-outline-secondary" data-share-ticket>Compartilhar</button>

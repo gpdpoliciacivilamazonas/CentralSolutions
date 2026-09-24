@@ -136,3 +136,12 @@ document.addEventListener('DOMContentLoaded', () => {
 		});
 	});
 });
+function printTicket() {
+  const printDate = document.getElementById("print-date")
+
+  if (printDate) {
+    printDate.textContent = new Date().toLocaleDateString("pt-BR")
+  }
+
+  window.print()
+}
