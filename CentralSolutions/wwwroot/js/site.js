@@ -26,12 +26,6 @@ document.addEventListener('DOMContentLoaded', () => {
 		});
 	}
 
-	document.querySelectorAll('[data-print-ticket]').forEach((button) => {
-		button.addEventListener('click', () => {
-			window.print();
-		});
-	});
-
 	document.querySelectorAll('[data-share-ticket]').forEach((button) => {
 		button.addEventListener('click', async () => {
 			const url = window.location.href;

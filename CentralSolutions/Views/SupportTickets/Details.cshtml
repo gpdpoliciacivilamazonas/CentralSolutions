@@ -42,7 +42,7 @@ ViewData["Title"] = "Detalhes do chamado";
   </div>
   <div class="ticket-actions d-flex justify-content-end gap-2 mt-4 no-print">
     <a asp-action="Index" class="btn btn-outline-secondary">Voltar</a>
-    <button type="button" class="btn btn-outline-primary" onclick="printTicket()" data-print-ticket>Imprimir</button>
+    <button type="button" class="btn btn-outline-primary" onclick="printTicket()">Imprimir</button>
     <a href="@Url.Action("Export", "SupportTickets", new { id = Model.Id })" class="btn btn-outline-success"
 			download="chamado-@(Model.TicketNumber).csv">Exportar Excel</a>
     <button type="button" class="btn btn-outline-secondary" data-share-ticket>Compartilhar</button>
