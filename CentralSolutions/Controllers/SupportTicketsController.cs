@@ -49,7 +49,7 @@ public class SupportTicketsController(ApplicationDbContext context) : Controller
 		ViewBag.Statuses = GetStatusSelectList(status);
 
 		return View(await tickets
-			.OrderByDescending(ticket => ticket.Id)
+			.OrderByDescending(ticket => ticket.TicketNumber)
 			.ToListAsync());
 	}
 

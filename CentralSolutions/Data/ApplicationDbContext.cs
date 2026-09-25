@@ -27,6 +27,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 		modelBuilder.Entity<SupportTicket>(entity =>
 		{
 			entity.ToTable("support_tickets");
+			entity.Property(ticket => ticket.Id).HasConversion<string>().HasColumnType("TEXT");
 			entity.Property(ticket => ticket.Department).HasMaxLength(100).IsRequired();
 			entity.Property(ticket => ticket.TicketType).HasMaxLength(100).IsRequired();
 			entity.Property(ticket => ticket.ResponsibleTechnician).HasMaxLength(120);
