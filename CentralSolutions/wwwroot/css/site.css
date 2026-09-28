@@ -767,6 +767,8 @@ html[data-theme="light"] .btn-outline-secondary {
 	}
 
 	.printable-area {
+		display: flex;
+		flex-direction: column;
 		color: black !important;
 		border: 0;
 		box-shadow: none;
@@ -793,14 +795,13 @@ html[data-theme="light"] .btn-outline-secondary {
 	.print-footer {
 		display: flex;
 		background: #fff;
-		bottom: 0;
 		height: auto;
-		left: 0;
 		overflow: visible;
 		padding: 0.75rem 0;
 		pointer-events: none;
-		position: fixed;
-		right: 0;
+		position: static;
+		margin-top: auto;
 		visibility: visible;
+		width: 100%;
 	}
 }
