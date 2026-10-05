@@ -101,6 +101,8 @@ Desktop.ini
 # Temporary files
 # =========================
 
+graphify*
+
 *.tmp
 *.temp
 *.bak
