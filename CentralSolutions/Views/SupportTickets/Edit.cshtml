@@ -1,11 +1,17 @@
-﻿@model SupportTicket
+@model SupportTicket
 @{
-ViewData["Title"] = "Editar chamado";
+ViewData["Title"] = $"Chamado #{Model.TicketNumber}";
+ViewData["ExactTitle"] = $"Chamado #{Model.TicketNumber}";
+var returnUrl = (ViewBag.ReturnUrl as string) ?? Context.Request.Query["returnUrl"].ToString();
+if (string.IsNullOrWhiteSpace(returnUrl) || !Url.IsLocalUrl(returnUrl))
+{
+    returnUrl = Url.Action("Details", new { id = Model.Id }) ?? Url.Action("Index");
+}
 }
 <div class="page-heading">
   <div>
     <span class="eyebrow text-primary">Atualização</span>
-    <h1>Editar chamado</h1>
+    <h1>Editar Chamado #@Model.TicketNumber</h1>
     <p>Atualize a situação, responsável, problema ou solução da demanda.</p>
   </div>
 </div>
@@ -14,6 +20,7 @@ ViewData["Title"] = "Editar chamado";
     <div class="content-card">
       <form asp-action="Edit">
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <input type="hidden" name="returnUrl" value="@returnUrl" />
         <input type="hidden" asp-for="Id" />
         <input type="hidden" asp-for="TicketNumber" />
         <input type="hidden" asp-for="CreatedAt" />
@@ -56,14 +63,9 @@ ViewData["Title"] = "Editar chamado";
             <textarea asp-for="Problem" class="form-control" rows="4" placeholder="Descreva o problema apresentado"></textarea>
             <span asp-validation-for="Problem" class="text-danger"></span>
           </div>
-          <div class="col-12">
-            <label asp-for="Solution" class="form-label"></label>
-            <textarea asp-for="Solution" class="form-control" rows="4" placeholder="Descreva a solução aplicada, se houver"></textarea>
-            <span asp-validation-for="Solution" class="text-danger"></span>
-          </div>
         </div>
         <div class="d-flex justify-content-end gap-2 mt-4">
-          <a asp-action="Index" class="btn btn-outline-secondary">Voltar</a>
+          <a href="@returnUrl" class="btn btn-outline-secondary" onclick="if (window.history.length > 1) { window.history.back(); return false; }">Cancelar</a>
           <button type="submit" class="btn btn-primary px-4">Salvar</button>
         </div>
       </form>

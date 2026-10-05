@@ -1,13 +1,14 @@
-﻿@model SupportTicket
+@model SupportTicket
 
 @{
-    ViewData["Title"] = "Excluir chamado";
+    ViewData["Title"] = $"Chamado #{Model.TicketNumber}";
+    ViewData["ExactTitle"] = $"Chamado #{Model.TicketNumber}";
 }
 
 <div class="page-heading">
     <div>
         <span class="eyebrow text-danger">Exclusão</span>
-        <h1>Excluir chamado</h1>
+        <h1>Excluir Chamado #@Model.TicketNumber</h1>
         <p>Confira os dados antes de remover este registro.</p>
     </div>
 </div>
@@ -25,16 +26,14 @@
         <dt class="col-sm-4">@Html.DisplayNameFor(model => model.ResponsibleTechnician)</dt>
         <dd class="col-sm-8">@(Model.ResponsibleTechnician ?? "-")</dd>
         <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Problem)</dt>
-        <dd class="col-sm-8">@Model.Problem</dd>
-        <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Solution)</dt>
-        <dd class="col-sm-8">@(Model.Solution ?? "-")</dd>
+        <dd class="col-sm-8 text-break">@Model.Problem</dd>
         <dt class="col-sm-4">@Html.DisplayNameFor(model => model.ResolutionStatus)</dt>
         <dd class="col-sm-8"><span class="status-badge @GetStatusClass(Model.ResolutionStatus)">@GetStatusName(Model.ResolutionStatus)</span></dd>
     </dl>
 
     <form asp-action="Delete" class="d-flex justify-content-end gap-2 mt-4">
         <input type="hidden" asp-for="Id" />
-        <a asp-action="Index" class="btn btn-outline-secondary">Voltar</a>
+        <a asp-action="Index" class="btn btn-outline-secondary" onclick="if (window.history.length > 1) { window.history.back(); return false; }">Voltar</a>
         <button type="submit" class="btn btn-danger px-4">Excluir</button>
     </form>
 </div>
@@ -45,8 +44,8 @@
         return status switch
         {
             TicketResolutionStatus.Open => "status-open",
-            TicketResolutionStatus.No => "status-no",
-            TicketResolutionStatus.Yes => "status-yes",
+            TicketResolutionStatus.OnGoing => "status-ongoing",
+            TicketResolutionStatus.Done => "status-yes",
             _ => string.Empty
         };
     }
@@ -56,8 +55,8 @@
         return status switch
         {
             TicketResolutionStatus.Open => "Em aberto",
-            TicketResolutionStatus.No => "Não",
-            TicketResolutionStatus.Yes => "Sim",
+            TicketResolutionStatus.OnGoing => "Em andamento",
+            TicketResolutionStatus.Done => "Concluído",
             _ => status.ToString()
         };
     }

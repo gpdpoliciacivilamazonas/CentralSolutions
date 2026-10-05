@@ -54,6 +54,39 @@ public class SupportTicketsController(ApplicationDbContext context) : Controller
 	}
 
 	[AllowAnonymous]
+	[HttpGet("c/{code}")]
+	public async Task<IActionResult> ByCode(string code)
+	{
+		if (string.IsNullOrWhiteSpace(code))
+		{
+			return NotFound();
+		}
+
+		Guid ticketId;
+		try
+		{
+			var bytes = Microsoft.AspNetCore.WebUtilities.WebEncoders.Base64UrlDecode(code);
+			if (bytes.Length != 16)
+			{
+				return NotFound();
+			}
+
+			ticketId = new Guid(bytes);
+		}
+		catch
+		{
+			return NotFound();
+		}
+
+		return await Details(ticketId);
+	}
+
+	public static string ToShortSlug(Guid id)
+	{
+		return Microsoft.AspNetCore.WebUtilities.WebEncoders.Base64UrlEncode(id.ToByteArray());
+	}
+
+	[AllowAnonymous]
 	public async Task<IActionResult> Details(Guid? id)
 	{
 		if (id is null)
@@ -64,6 +97,7 @@ public class SupportTicketsController(ApplicationDbContext context) : Controller
 		if (User.Identity?.IsAuthenticated == true)
 		{
 			var ticket = await context.SupportTickets
+				.Include(item => item.Updates)
 				.FirstOrDefaultAsync(item => item.Id == id);
 
 			if (ticket is null)
@@ -71,6 +105,7 @@ public class SupportTicketsController(ApplicationDbContext context) : Controller
 				return NotFound();
 			}
 
+			ticket.Updates = ticket.Updates.OrderByDescending(u => u.CreatedAt).ToList();
 			return View("Details", ticket);
 		}
 
@@ -83,10 +118,18 @@ public class SupportTicketsController(ApplicationDbContext context) : Controller
 				TicketType = ticket.TicketType,
 				ResponsibleTechnician = ticket.ResponsibleTechnician,
 				Problem = ticket.Problem,
-				Solution = ticket.Solution,
 				ResolutionStatus = ticket.ResolutionStatus,
 				CreatedAt = ticket.CreatedAt,
-				UpdatedAt = ticket.UpdatedAt
+				UpdatedAt = ticket.UpdatedAt,
+				Updates = ticket.Updates
+					.OrderByDescending(u => u.CreatedAt)
+					.Select(u => new TicketUpdateViewModel
+					{
+						Description = u.Description,
+						CreatedBy = u.CreatedBy,
+						CreatedAt = u.CreatedAt
+					})
+					.ToList()
 			})
 			.FirstOrDefaultAsync();
 
@@ -104,12 +147,15 @@ public class SupportTicketsController(ApplicationDbContext context) : Controller
 	{
 		var ticket = await context.SupportTickets
 			.AsNoTracking()
+			.Include(item => item.Updates)
 			.FirstOrDefaultAsync(item => item.TicketNumber == ticketNumber);
 
 		if (ticket is null)
 		{
 			return NotFound();
 		}
+
+		var latestUpdate = ticket.Updates.OrderByDescending(u => u.CreatedAt).FirstOrDefault()?.Description ?? "-";
 
 		var csv = new StringBuilder();
 		csv.AppendLine("Campo;Valor");
@@ -118,7 +164,7 @@ public class SupportTicketsController(ApplicationDbContext context) : Controller
 		csv.AppendLine($"Chamado;{EscapeCsv(ticket.TicketType)}");
 		csv.AppendLine($"Responsável;{EscapeCsv(ticket.ResponsibleTechnician)}");
 		csv.AppendLine($"Problema;{EscapeCsv(ticket.Problem)}");
-		csv.AppendLine($"Solução;{EscapeCsv(ticket.Solution)}");
+		csv.AppendLine($"Última Atualização;{EscapeCsv(latestUpdate)}");
 		csv.AppendLine($"Status;{EscapeCsv(GetStatusName(ticket.ResolutionStatus))}");
 		csv.AppendLine($"Criado em;{ticket.CreatedAt.ToLocalTime():dd/MM/yyyy HH:mm}");
 		csv.AppendLine($"Atualizado em;{(ticket.UpdatedAt.HasValue ? ticket.UpdatedAt.Value.ToLocalTime().ToString("dd/MM/yyyy HH:mm") : "-")}");
@@ -135,14 +181,15 @@ public class SupportTicketsController(ApplicationDbContext context) : Controller
 
 	[HttpPost]
 	[ValidateAntiForgeryToken]
-	public async Task<IActionResult> Create([Bind("Department,TicketType,ResponsibleTechnician,Problem,Solution,ResolutionStatus")] SupportTicket ticket)
+	public async Task<IActionResult> Create([Bind("Department,TicketType,ResponsibleTechnician,Problem")] SupportTicket ticket)
 	{
 		if (!ModelState.IsValid)
 		{
-			await PopulateSelectLists(ticket.Department, ticket.TicketType, ticket.ResolutionStatus);
+			await PopulateSelectLists(ticket.Department, ticket.TicketType, TicketResolutionStatus.Open);
 			return View(ticket);
 		}
 
+		ticket.ResolutionStatus = TicketResolutionStatus.Open;
 		ticket.CreatedAt = DateTime.UtcNow;
 
 		for (var attempt = 0; attempt < 3; attempt++)
@@ -171,10 +218,103 @@ public class SupportTicketsController(ApplicationDbContext context) : Controller
 		}
 		var errorMsg = "Não foi possivel gerar o número do chamado. ";
 		throw new InvalidOperationException(errorMsg);
-
 	}
 
-	public async Task<IActionResult> Edit(Guid? id)
+	[HttpGet]
+	public async Task<IActionResult> AddUpdate(Guid? id)
+	{
+		if (id is null)
+		{
+			return NotFound();
+		}
+
+		var ticket = await context.SupportTickets
+			.AsNoTracking()
+			.FirstOrDefaultAsync(t => t.Id == id);
+
+		if (ticket is null)
+		{
+			return NotFound();
+		}
+
+		var model = new AddTicketUpdateViewModel
+		{
+			TicketId = ticket.Id,
+			TicketNumber = ticket.TicketNumber,
+			Department = ticket.Department,
+			TicketType = ticket.TicketType,
+			ResponsibleTechnician = ticket.ResponsibleTechnician,
+			Problem = ticket.Problem,
+			CurrentStatus = ticket.ResolutionStatus,
+			CreatedBy = ticket.ResponsibleTechnician ?? User.Identity?.Name ?? string.Empty,
+			MarkAsDone = false
+		};
+
+		return View(model);
+	}
+
+	[HttpPost]
+	[ValidateAntiForgeryToken]
+	public async Task<IActionResult> AddUpdate(AddTicketUpdateViewModel model)
+	{
+		if (!ModelState.IsValid)
+		{
+			return View(model);
+		}
+
+		var ticket = await context.SupportTickets
+			.FirstOrDefaultAsync(t => t.Id == model.TicketId);
+
+		if (ticket is null)
+		{
+			return NotFound();
+		}
+
+		var author = !string.IsNullOrWhiteSpace(model.CreatedBy)
+			? model.CreatedBy.Trim()
+			: (User.Identity?.Name ?? "Técnico");
+
+		var update = new TicketUpdate
+		{
+			SupportTicketId = ticket.Id,
+			Description = model.Description.Trim(),
+			CreatedBy = author,
+			CreatedAt = DateTime.UtcNow
+		};
+
+		context.TicketUpdates.Add(update);
+
+		ticket.ResolutionStatus = model.MarkAsDone
+			? TicketResolutionStatus.Done
+			: TicketResolutionStatus.OnGoing;
+
+		ticket.UpdatedAt = DateTime.UtcNow;
+
+		await context.SaveChangesAsync();
+
+		return RedirectToAction(nameof(Details), new { id = ticket.Id });
+	}
+
+	[HttpPost]
+	[ValidateAntiForgeryToken]
+	public async Task<IActionResult> CloseTicket(Guid id)
+	{
+		var ticket = await context.SupportTickets.FindAsync(id);
+
+		if (ticket is null)
+		{
+			return NotFound();
+		}
+
+		ticket.ResolutionStatus = TicketResolutionStatus.Done;
+		ticket.UpdatedAt = DateTime.UtcNow;
+
+		await context.SaveChangesAsync();
+
+		return RedirectToAction(nameof(Details), new { id = ticket.Id });
+	}
+
+	public async Task<IActionResult> Edit(Guid? id, string? returnUrl = null)
 	{
 		if (id is null)
 		{
@@ -188,13 +328,14 @@ public class SupportTicketsController(ApplicationDbContext context) : Controller
 			return NotFound();
 		}
 
+		ViewBag.ReturnUrl = returnUrl;
 		await PopulateSelectLists(ticket.Department, ticket.TicketType, ticket.ResolutionStatus);
 		return View(ticket);
 	}
 
 	[HttpPost]
 	[ValidateAntiForgeryToken]
-	public async Task<IActionResult> Edit(Guid id, [Bind("Id,TicketNumber,Department,TicketType,ResponsibleTechnician,Problem,Solution,ResolutionStatus,CreatedAt")] SupportTicket ticket)
+	public async Task<IActionResult> Edit(Guid id, [Bind("Id,TicketNumber,Department,TicketType,ResponsibleTechnician,Problem,ResolutionStatus,CreatedAt")] SupportTicket ticket, string? returnUrl = null)
 	{
 		if (id != ticket.Id)
 		{
@@ -203,6 +344,7 @@ public class SupportTicketsController(ApplicationDbContext context) : Controller
 
 		if (!ModelState.IsValid)
 		{
+			ViewBag.ReturnUrl = returnUrl;
 			await PopulateSelectLists(ticket.Department, ticket.TicketType, ticket.ResolutionStatus);
 			return View(ticket);
 		}
@@ -223,7 +365,12 @@ public class SupportTicketsController(ApplicationDbContext context) : Controller
 			throw;
 		}
 
-		return RedirectToAction(nameof(Index));
+		if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+		{
+			return LocalRedirect(returnUrl);
+		}
+
+		return RedirectToAction(nameof(Details), new { id = ticket.Id });
 	}
 
 	public async Task<IActionResult> Delete(Guid? id)
@@ -296,9 +443,8 @@ public class SupportTicketsController(ApplicationDbContext context) : Controller
 		return status switch
 		{
 			TicketResolutionStatus.Open => "Em aberto",
-			TicketResolutionStatus.No => "Incompleto",
-			TicketResolutionStatus.Yes => "Completo",
-			TicketResolutionStatus.InProgress => "Em andamento",
+			TicketResolutionStatus.OnGoing => "Em andamento",
+			TicketResolutionStatus.Done => "Concluído",
 			_ => status.ToString()
 		};
 	}
