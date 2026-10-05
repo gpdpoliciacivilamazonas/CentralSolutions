@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	document.querySelectorAll('[data-share-ticket]').forEach((button) => {
 		button.addEventListener('click', async () => {
-			const url = window.location.href;
+			const url = button.dataset.shareUrl || window.location.href;
 
 			if (navigator.share) {
 				await navigator.share({
