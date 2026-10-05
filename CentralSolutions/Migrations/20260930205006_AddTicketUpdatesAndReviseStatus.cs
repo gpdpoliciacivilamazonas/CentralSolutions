@@ -54,8 +54,12 @@ namespace CentralSolutions.Migrations
             // 3 (Yes / Completo) -> 2 (Done / Concluído)
             // 2 (No / Incompleto) -> 1 (OnGoing / Em andamento)
             migrationBuilder.Sql(@"
-                UPDATE support_tickets SET ResolutionStatus = 2 WHERE ResolutionStatus = 3;
-                UPDATE support_tickets SET ResolutionStatus = 1 WHERE ResolutionStatus = 2;
+                UPDATE support_tickets 
+                SET ResolutionStatus = CASE 
+                    WHEN ResolutionStatus = 3 THEN 2 
+                    WHEN ResolutionStatus = 2 THEN 1 
+                    ELSE ResolutionStatus 
+                END;
             ");
 
             migrationBuilder.DropColumn(
