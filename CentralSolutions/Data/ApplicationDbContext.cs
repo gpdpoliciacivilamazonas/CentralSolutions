@@ -9,6 +9,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
 	public DbSet<SupportTicket> SupportTickets => Set<SupportTicket>();
 
+	public DbSet<TicketUpdate> TicketUpdates => Set<TicketUpdate>();
+
 	public DbSet<User> Users => Set<User>();
 
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -32,9 +34,24 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 			entity.Property(ticket => ticket.TicketType).HasMaxLength(100).IsRequired();
 			entity.Property(ticket => ticket.ResponsibleTechnician).HasMaxLength(120);
 			entity.Property(ticket => ticket.Problem).HasMaxLength(1000).IsRequired();
-			entity.Property(ticket => ticket.Solution).HasMaxLength(1000);
 			entity.Property(ticket => ticket.ResolutionStatus).IsRequired();
 			entity.Property(ticket => ticket.CreatedAt).IsRequired();
+			entity.HasIndex(ticket => ticket.TicketNumber).IsUnique();
+		});
+
+		modelBuilder.Entity<TicketUpdate>(entity =>
+		{
+			entity.ToTable("ticket_updates");
+			entity.Property(update => update.Id).HasConversion<string>().HasColumnType("TEXT");
+			entity.Property(update => update.SupportTicketId).HasConversion<string>().HasColumnType("TEXT");
+			entity.Property(update => update.Description).HasMaxLength(2000).IsRequired();
+			entity.Property(update => update.CreatedBy).HasMaxLength(120);
+			entity.Property(update => update.CreatedAt).IsRequired();
+
+			entity.HasOne(update => update.SupportTicket)
+				.WithMany(ticket => ticket.Updates)
+				.HasForeignKey(update => update.SupportTicketId)
+				.OnDelete(DeleteBehavior.Cascade);
 		});
 
 		modelBuilder.Entity<User>(entity =>

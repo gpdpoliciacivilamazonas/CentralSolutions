@@ -368,6 +368,11 @@ input[type="number"] {
 	color: #c2410c;
 }
 
+.status-ongoing {
+	background: #eff6ff;
+	color: #1d4ed8;
+}
+
 .status-no {
 	background: #fee2e2;
 	color: #b91c1c;
@@ -654,6 +659,11 @@ html[data-theme="dark"] .ticket-number {
 html[data-theme="dark"] .status-open {
 	background: #431407;
 	color: #fdba74;
+}
+
+html[data-theme="dark"] .status-ongoing {
+	background: #1e3a8a;
+	color: #93c5fd;
 }
 
 html[data-theme="dark"] .status-no {

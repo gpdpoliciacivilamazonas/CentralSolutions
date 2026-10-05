@@ -28,9 +28,8 @@ public class SupportTicket
 	[StringLength(1000)]
 	public string Problem { get; set; } = string.Empty;
 
-	[Display(Name = "Solução")]
-	[StringLength(1000)]
-	public string? Solution { get; set; }
+	[Display(Name = "Atualizações")]
+	public ICollection<TicketUpdate> Updates { get; set; } = new List<TicketUpdate>();
 
 	[Display(Name = "Status")]
 	[Required(ErrorMessage = "Informe a situação do chamado.")]
@@ -49,11 +48,8 @@ public enum TicketResolutionStatus
 	Open = 0,
 
 	[Display(Name = "Em andamento")]
-	InProgress = 1,
+	OnGoing = 1,
 
-	[Display(Name = "Incompleto")]
-	No = 2,
-
-	[Display(Name = "Completo")]
-	Yes = 3,
+	[Display(Name = "Concluído")]
+	Done = 2,
 }
