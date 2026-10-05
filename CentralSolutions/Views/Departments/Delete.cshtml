@@ -1,4 +1,4 @@
-﻿@model Department
+@model Department
 
 @{
     ViewData["Title"] = "Excluir setor";
@@ -23,7 +23,7 @@
         <dt class="col-sm-4">@Html.DisplayNameFor(model => model.IsActive)</dt>
         <dd class="col-sm-8">@(Model.IsActive ? "Ativo" : "Inativo")</dd>
         <dt class="col-sm-4">@Html.DisplayNameFor(model => model.CreatedAt)</dt>
-        <dd class="col-sm-8">@Model.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</dd>
+        <dd class="col-sm-8">@Model.CreatedAt.ToDisplayString()</dd>
     </dl>
 
     <form asp-action="Delete" class="d-flex justify-content-end gap-2 mt-4">

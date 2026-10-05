@@ -69,8 +69,8 @@
             <td>@(item.ResponsibleTechnician ?? "-")</td>
             <td class="text-muted text-truncate" style="max-width: 220px;" title="@item.Problem">@item.Problem</td>
             <td><span class="status-badge @GetStatusClass(item.ResolutionStatus)">@GetStatusName(item.ResolutionStatus)</span></td>
-            <td class="text-muted text-nowrap">@item.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
-            <td class="text-muted text-nowrap">@(item.UpdatedAt?.ToLocalTime().ToString("dd/MM/yyyy HH:mm") ?? "-")</td>
+            <td class="text-muted text-nowrap">@item.CreatedAt.ToDisplayString()</td>
+            <td class="text-muted text-nowrap">@item.UpdatedAt.ToDisplayString()</td>
             <td class="text-end text-nowrap">
               <div class="d-inline-flex gap-1">
                 <a asp-action="Edit" asp-route-id="@item.Id" asp-route-returnUrl="@(Context.Request.Path + Context.Request.QueryString)" class="btn btn-sm btn-outline-primary" title="Editar">Editar</a>

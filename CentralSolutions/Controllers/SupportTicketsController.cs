@@ -166,8 +166,8 @@ public class SupportTicketsController(ApplicationDbContext context) : Controller
 		csv.AppendLine($"Problema;{EscapeCsv(ticket.Problem)}");
 		csv.AppendLine($"Última Atualização;{EscapeCsv(latestUpdate)}");
 		csv.AppendLine($"Status;{EscapeCsv(GetStatusName(ticket.ResolutionStatus))}");
-		csv.AppendLine($"Criado em;{ticket.CreatedAt.ToLocalTime():dd/MM/yyyy HH:mm}");
-		csv.AppendLine($"Atualizado em;{(ticket.UpdatedAt.HasValue ? ticket.UpdatedAt.Value.ToLocalTime().ToString("dd/MM/yyyy HH:mm") : "-")}");
+		csv.AppendLine($"Criado em;{ticket.CreatedAt.ToDisplayString()}");
+		csv.AppendLine($"Atualizado em;{ticket.UpdatedAt.ToDisplayString()}");
 
 		var bytes = Encoding.UTF8.GetPreamble().Concat(Encoding.UTF8.GetBytes(csv.ToString())).ToArray();
 		return File(bytes, "application/vnd.ms-excel; charset=utf-8", $"chamado-{ticket.TicketNumber}.csv");
