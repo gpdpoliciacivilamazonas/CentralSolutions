@@ -27,9 +27,8 @@ public class SupportTicketPublicViewModel
 	[StringLength(1000)]
 	public string Problem { get; set; } = string.Empty;
 
-	[Display(Name = "Solução")]
-	[StringLength(1000)]
-	public string? Solution { get; set; }
+	[Display(Name = "Atualizações")]
+	public List<TicketUpdateViewModel> Updates { get; set; } = [];
 
 	[Display(Name = "Status")]
 	[Required(ErrorMessage = "Informe a situação do chamado.")]
@@ -40,4 +39,16 @@ public class SupportTicketPublicViewModel
 
 	[Display(Name = "Atualizado em")]
 	public DateTime? UpdatedAt { get; set; }
+}
+
+public class TicketUpdateViewModel
+{
+	[Display(Name = "Atualização")]
+	public string Description { get; set; } = string.Empty;
+
+	[Display(Name = "Registrado por")]
+	public string? CreatedBy { get; set; }
+
+	[Display(Name = "Data")]
+	public DateTime CreatedAt { get; set; }
 }

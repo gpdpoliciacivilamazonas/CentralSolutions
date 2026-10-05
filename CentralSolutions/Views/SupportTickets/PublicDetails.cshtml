@@ -1,11 +1,15 @@
 @model SupportTicketPublicViewModel
 @{
-ViewData["Title"] = "Detalhes do chamado";
+ViewData["Title"] = $"Chamado #{Model.TicketNumber}";
+ViewData["ExactTitle"] = $"Chamado #{Model.TicketNumber}";
+ViewData["MetaTitle"] = $"Chamado #{Model.TicketNumber}";
+ViewData["MetaDescription"] = $"{Model.Department} - {Model.TicketType}: {Model.Problem}";
+ViewData["MetaImage"] = Url.Content("~/img/1000261363.jpg");
 }
 <div class="page-heading">
   <div>
     <span class="eyebrow text-primary">Visualização</span>
-    <h1>Detalhes do chamado</h1>
+    <h1>Chamado #@Model.TicketNumber</h1>
     <p>Consulte os dados registrados para esta demanda.</p>
   </div>
 </div>
@@ -21,14 +25,37 @@ ViewData["Title"] = "Detalhes do chamado";
     <dt class="col-sm-4">@Html.DisplayNameFor(model => model.ResponsibleTechnician)</dt>
     <dd class="col-sm-8">@(Model.ResponsibleTechnician ?? "-")</dd>
     <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Problem)</dt>
-    <dd class="col-sm-8">@Model.Problem</dd>
-    <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Solution)</dt>
-    <dd class="col-sm-8">@(Model.Solution ?? "-")</dd>
+    <dd class="col-sm-8 text-break">@Model.Problem</dd>
     <dt class="col-sm-4">@Html.DisplayNameFor(model => model.CreatedAt)</dt>
     <dd class="col-sm-8">@Model.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</dd>
     <dt class="col-sm-4">@Html.DisplayNameFor(model => model.UpdatedAt)</dt>
     <dd class="col-sm-8">@(Model.UpdatedAt?.ToLocalTime().ToString("dd/MM/yyyy HH:mm") ?? "-")</dd>
   </dl>
+
+  <div class="mt-4 pt-3 border-top">
+    <h3 class="h5 mb-3 fw-bold">Histórico de Atualizações</h3>
+
+    @if (Model.Updates != null && Model.Updates.Any())
+    {
+      <div class="updates-timeline">
+        @foreach (var update in Model.Updates)
+        {
+          <div class="update-item p-3 mb-2 rounded border bg-light-subtle">
+            <div class="d-flex justify-content-between align-items-center mb-1 text-muted small">
+              <span><strong>@(update.CreatedBy ?? "Técnico")</strong></span>
+              <time class="text-nowrap">@update.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</time>
+            </div>
+            <p class="mb-0 text-break" style="white-space: pre-wrap;">@update.Description</p>
+          </div>
+        }
+      </div>
+    }
+    else
+    {
+      <p class="text-muted fst-italic mb-0">Nenhuma atualização registrada até o momento.</p>
+    }
+  </div>
+
   <div class="print-footer">
     <img src="~/img/1000261363.jpg" alt="Brasão Polícia Civil AM" class="print-footer-crest" />
     <div class="print-stamp">
@@ -50,8 +77,8 @@ private static string GetStatusClass(TicketResolutionStatus status)
 return status switch
 {
 TicketResolutionStatus.Open => "status-open",
-TicketResolutionStatus.No => "status-no",
-TicketResolutionStatus.Yes => "status-yes",
+TicketResolutionStatus.OnGoing => "status-ongoing",
+TicketResolutionStatus.Done => "status-yes",
 _ => string.Empty
 };
 }
@@ -60,9 +87,8 @@ private static string GetStatusName(TicketResolutionStatus status)
 return status switch
 {
 TicketResolutionStatus.Open => "Em aberto",
-TicketResolutionStatus.InProgress => "Em andamento",
-TicketResolutionStatus.No => "Incompleto",
-TicketResolutionStatus.Yes => "Completo",
+TicketResolutionStatus.OnGoing => "Em andamento",
+TicketResolutionStatus.Done => "Concluído",
 _ => "Em aberto"
 };
 }

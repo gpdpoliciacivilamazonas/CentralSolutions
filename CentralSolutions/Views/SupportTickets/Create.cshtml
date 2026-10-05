@@ -1,4 +1,4 @@
-﻿@model SupportTicket
+@model SupportTicket
 
 @{
     ViewData["Title"] = "Novo chamado";
@@ -46,20 +46,10 @@
                         <input asp-for="ResponsibleTechnician" class="form-control" />
                         <span asp-validation-for="ResponsibleTechnician" class="text-danger"></span>
                     </div>
-                    <div class="col-md-6">
-                        <label asp-for="ResolutionStatus" class="form-label"></label>
-                        <select asp-for="ResolutionStatus" class="form-select" asp-items="ViewBag.Statuses"></select>
-                        <span asp-validation-for="ResolutionStatus" class="text-danger"></span>
-                    </div>
                     <div class="col-12">
                         <label asp-for="Problem" class="form-label"></label>
                         <textarea asp-for="Problem" class="form-control" rows="4" placeholder="Descreva o problema apresentado"></textarea>
                         <span asp-validation-for="Problem" class="text-danger"></span>
-                    </div>
-                    <div class="col-12">
-                        <label asp-for="Solution" class="form-label"></label>
-                        <textarea asp-for="Solution" class="form-control" rows="4" placeholder="Descreva a solução aplicada, se houver"></textarea>
-                        <span asp-validation-for="Solution" class="text-danger"></span>
                     </div>
                 </div>
                 <div class="d-flex justify-content-end gap-2 mt-4">

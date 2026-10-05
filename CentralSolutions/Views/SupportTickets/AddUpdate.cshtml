@@ -1,0 +1,104 @@
+@model CentralSolutions.ViewModels.AddTicketUpdateViewModel
+@{
+    ViewData["Title"] = $"Nova Atualização - Chamado #{Model.TicketNumber}";
+    ViewData["ExactTitle"] = $"Chamado #{Model.TicketNumber}";
+}
+
+<div class="page-heading">
+    <div>
+        <span class="eyebrow text-primary">Andamento do Chamado</span>
+        <h1>Nova Atualização</h1>
+        <p>Registre um novo andamento ou resolução para o chamado <strong>#@Model.TicketNumber</strong>.</p>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <div class="content-card mb-4">
+            <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+                <div>
+                    <span class="eyebrow text-primary">@Model.Department</span>
+                    <h2 class="h5 mb-0">Chamado #@Model.TicketNumber - @Model.TicketType</h2>
+                </div>
+                <span class="status-badge @GetStatusClass(Model.CurrentStatus)">@GetStatusName(Model.CurrentStatus)</span>
+            </div>
+            <div class="row g-2 text-muted small mb-2">
+                <div class="col-sm-6">
+                    <strong>Responsável:</strong> @(Model.ResponsibleTechnician ?? "-")
+                </div>
+            </div>
+            <div class="p-3 rounded bg-light-subtle border">
+                <strong class="d-block mb-1 text-secondary small text-uppercase fw-bold">Problema reportado:</strong>
+                <p class="mb-0 text-break">@Model.Problem</p>
+            </div>
+        </div>
+
+        <div class="content-card">
+            <form asp-action="AddUpdate" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <input type="hidden" asp-for="TicketId" />
+                <input type="hidden" asp-for="TicketNumber" />
+                <input type="hidden" asp-for="Department" />
+                <input type="hidden" asp-for="TicketType" />
+                <input type="hidden" asp-for="ResponsibleTechnician" />
+                <input type="hidden" asp-for="Problem" />
+                <input type="hidden" asp-for="CurrentStatus" />
+
+                <div class="mb-3">
+                    <label asp-for="CreatedBy" class="form-label"></label>
+                    <input asp-for="CreatedBy" class="form-control" placeholder="Informe seu nome (ex.: Lucas Leite)" />
+                    <span asp-validation-for="CreatedBy" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Description" class="form-label"></label>
+                    <textarea asp-for="Description" class="form-control" rows="5" placeholder="Descreva os procedimentos realizados, diagnóstico ou conclusão..."></textarea>
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+
+                <div class="form-check form-switch p-3 rounded border mb-4 bg-light-subtle">
+                    <input class="form-check-input ms-0 me-3" type="checkbox" asp-for="MarkAsDone" id="markAsDoneSwitch" style="cursor: pointer;" />
+                    <label class="form-check-label fw-bold" for="markAsDoneSwitch" style="cursor: pointer;">
+                        Finalizar chamado com esta atualização (Marcar como Concluído / Done)
+                    </label>
+                    <div class="form-text ms-1 mt-1">
+                        Se desmarcado, o status do chamado será atribuído automaticamente como <strong>Em andamento (OnGoing)</strong>.
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a asp-action="Details" asp-route-id="@Model.TicketId" class="btn btn-outline-secondary">Cancelar</a>
+                    <button type="submit" class="btn btn-primary px-4">Salvar Atualização</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
+
+@functions {
+    private static string GetStatusClass(TicketResolutionStatus status)
+    {
+        return status switch
+        {
+            TicketResolutionStatus.Open => "status-open",
+            TicketResolutionStatus.OnGoing => "status-ongoing",
+            TicketResolutionStatus.Done => "status-yes",
+            _ => string.Empty
+        };
+    }
+
+    private static string GetStatusName(TicketResolutionStatus status)
+    {
+        return status switch
+        {
+            TicketResolutionStatus.Open => "Em aberto",
+            TicketResolutionStatus.OnGoing => "Em andamento",
+            TicketResolutionStatus.Done => "Concluído",
+            _ => "Em aberto"
+        };
+    }
+}
