@@ -11,6 +11,7 @@ services:
       APP_PASSWORD: ${APP_PASSWORD}
       ASPNETCORE_ENVIRONMENT: Production
       ConnectionStrings__DefaultConnection: Data Source=/app/data/central_solutions.db
+      AttachmentsDirectory: /app/data/attachments
     volumes:
       - centralsolutions-data:/app/data
     restart: unless-stopped

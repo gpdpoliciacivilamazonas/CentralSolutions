@@ -11,6 +11,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 
 	public DbSet<TicketUpdate> TicketUpdates => Set<TicketUpdate>();
 
+	public DbSet<TicketAttachment> TicketAttachments => Set<TicketAttachment>();
+
 	public DbSet<User> Users => Set<User>();
 
 	protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -51,6 +53,23 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 			entity.HasOne(update => update.SupportTicket)
 				.WithMany(ticket => ticket.Updates)
 				.HasForeignKey(update => update.SupportTicketId)
+				.OnDelete(DeleteBehavior.Cascade);
+		});
+
+		modelBuilder.Entity<TicketAttachment>(entity =>
+		{
+			entity.ToTable("ticket_attachments");
+			entity.Property(attachment => attachment.Id).HasConversion<string>().HasColumnType("TEXT");
+			entity.Property(attachment => attachment.SupportTicketId).HasConversion<string>().HasColumnType("TEXT");
+			entity.Property(attachment => attachment.FileName).HasMaxLength(255).IsRequired();
+			entity.Property(attachment => attachment.StoredFileName).HasMaxLength(255).IsRequired();
+			entity.Property(attachment => attachment.ContentType).HasMaxLength(100).IsRequired();
+			entity.Property(attachment => attachment.FileSize).IsRequired();
+			entity.Property(attachment => attachment.CreatedAt).IsRequired();
+
+			entity.HasOne(attachment => attachment.SupportTicket)
+				.WithMany(ticket => ticket.Attachments)
+				.HasForeignKey(attachment => attachment.SupportTicketId)
 				.OnDelete(DeleteBehavior.Cascade);
 		});
 

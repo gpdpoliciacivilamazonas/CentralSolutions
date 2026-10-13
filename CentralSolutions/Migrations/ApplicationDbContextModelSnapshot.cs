@@ -84,7 +84,48 @@ namespace CentralSolutions.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("TicketNumber")
+                        .IsUnique();
+
                     b.ToTable("support_tickets", (string)null);
+                });
+
+            modelBuilder.Entity("CentralSolutions.Models.TicketAttachment", b =>
+                {
+                    b.Property<string>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("TEXT");
+
+                    b.Property<long>("FileSize")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("StoredFileName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("SupportTicketId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SupportTicketId");
+
+                    b.ToTable("ticket_attachments", (string)null);
                 });
 
             modelBuilder.Entity("CentralSolutions.Models.TicketUpdate", b =>
@@ -141,6 +182,17 @@ namespace CentralSolutions.Migrations
                     b.ToTable("users", (string)null);
                 });
 
+            modelBuilder.Entity("CentralSolutions.Models.TicketAttachment", b =>
+                {
+                    b.HasOne("CentralSolutions.Models.SupportTicket", "SupportTicket")
+                        .WithMany("Attachments")
+                        .HasForeignKey("SupportTicketId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("SupportTicket");
+                });
+
             modelBuilder.Entity("CentralSolutions.Models.TicketUpdate", b =>
                 {
                     b.HasOne("CentralSolutions.Models.SupportTicket", "SupportTicket")
@@ -154,6 +206,8 @@ namespace CentralSolutions.Migrations
 
             modelBuilder.Entity("CentralSolutions.Models.SupportTicket", b =>
                 {
+                    b.Navigation("Attachments");
+
                     b.Navigation("Updates");
                 });
 #pragma warning restore 612, 618

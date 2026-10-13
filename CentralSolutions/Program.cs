@@ -21,6 +21,16 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     options.SlidingExpiration = true;
   });
 
+builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(options =>
+{
+  options.MultipartBodyLengthLimit = 250 * 1024 * 1024;
+});
+
+builder.WebHost.ConfigureKestrel(options =>
+{
+  options.Limits.MaxRequestBodySize = 250 * 1024 * 1024;
+});
+
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();

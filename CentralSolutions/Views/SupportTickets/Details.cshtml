@@ -58,6 +58,62 @@ ViewData["MetaImage"] = Url.Content("~/img/1000261363.jpg");
     <p class="text-muted fst-italic mb-0">Nenhuma atualização registrada até o momento.</p>
     }
   </div>
+  <div class="mt-4 pt-3 border-top">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h3 class="h5 mb-0 fw-bold">Anexos</h3>
+      @if (Model.Attachments != null && Model.Attachments.Any())
+      {
+        <a asp-action="DownloadAllAttachments" asp-route-id="@Model.Id" class="btn btn-sm btn-outline-primary no-print" download="Chamado #@(Model.TicketNumber).zip">
+          Baixar Todos (.zip)
+        </a>
+      }
+    </div>
+
+    @if (Model.Attachments != null && Model.Attachments.Any())
+    {
+      <div class="attachment-list mb-3">
+        @foreach (var attachment in Model.Attachments)
+        {
+          <div class="attachment-item">
+            <div class="d-flex align-items-center gap-2">
+              <span class="attachment-badge">
+                @System.IO.Path.GetExtension(attachment.FileName).TrimStart('.').ToUpperInvariant()
+              </span>
+              <div>
+                <a href="@Url.Action("DownloadAttachment", "SupportTickets", new { id = attachment.Id })" target="_blank" class="attachment-name">
+                  @attachment.FileName
+                </a>
+                <span class="text-muted small ms-2">(@GetFormattedFileSize(attachment.FileSize))</span>
+              </div>
+            </div>
+            <div class="d-flex align-items-center gap-2 no-print">
+              <a href="@Url.Action("DownloadAttachment", "SupportTickets", new { id = attachment.Id, download = true })" class="btn btn-sm btn-outline-secondary" title="Baixar arquivo">
+                Baixar
+              </a>
+              <form asp-action="DeleteAttachment" asp-route-id="@attachment.Id" method="post" class="d-inline" onsubmit="return confirm('Deseja excluir este anexo?');">
+                <button type="submit" class="btn btn-sm btn-outline-danger" title="Excluir anexo">Excluir</button>
+              </form>
+            </div>
+          </div>
+        }
+      </div>
+    }
+    else
+    {
+      <p class="text-muted fst-italic mb-3">Nenhum anexo registrado até o momento.</p>
+    }
+
+    <form asp-action="UploadAttachments" asp-route-id="@Model.Id" method="post" enctype="multipart/form-data" class="no-print mt-2">
+      <div class="row g-2 align-items-center">
+        <div class="col-sm-8 col-md-9">
+          <input type="file" name="files" multiple accept="image/*,video/*,.pdf" class="form-control form-control-sm" required />
+        </div>
+        <div class="col-sm-4 col-md-3">
+          <button type="submit" class="btn btn-sm btn-primary w-100">Adicionar Anexos</button>
+        </div>
+      </div>
+    </form>
+  </div>
   <div class="print-footer">
     <img src="~/img/1000261363.jpg" alt="Brasão Polícia Civil AM" class="print-footer-crest" />
     <div class="print-stamp">
@@ -109,5 +165,17 @@ TicketResolutionStatus.OnGoing => "Em andamento",
 TicketResolutionStatus.Done => "Concluído",
 _ => "Em aberto"
 };
+}
+private static string GetFormattedFileSize(long bytes)
+{
+	string[] suffixes = ["B", "KB", "MB", "GB", "TB"];
+	int counter = 0;
+	decimal number = bytes;
+	while (Math.Round(number / 1024) >= 1)
+	{
+		number /= 1024;
+		counter++;
+	}
+	return $"{number:n1} {suffixes[counter]}";
 }
 }

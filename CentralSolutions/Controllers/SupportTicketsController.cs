@@ -5,13 +5,14 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
+using System.IO.Compression;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
 namespace CentralSolutions.Controllers;
 
 [Authorize]
-public class SupportTicketsController(ApplicationDbContext context) : Controller
+public class SupportTicketsController(ApplicationDbContext context, IWebHostEnvironment environment, IConfiguration configuration) : Controller
 {
 	private static readonly string[] TicketTypes =
 	[
@@ -23,6 +24,58 @@ public class SupportTicketsController(ApplicationDbContext context) : Controller
 		"Sistema",
 		"Outros"
   ];
+
+	private static readonly HashSet<string> AllowedExtensions = new(StringComparer.OrdinalIgnoreCase)
+	{
+		// Imagens
+		".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp", ".svg",
+		// Vídeos
+		".mp4", ".webm", ".avi", ".mov", ".mkv", ".m4v",
+		// Documentos
+		".pdf"
+	};
+
+	private string GetAttachmentsDirectory()
+	{
+		var dir = configuration["AttachmentsDirectory"] ?? "attachments";
+		if (!Path.IsPathRooted(dir))
+		{
+			dir = Path.Combine(environment.ContentRootPath, dir);
+		}
+		Directory.CreateDirectory(dir);
+		return dir;
+	}
+
+	private async Task<TicketAttachment?> ProcessAndSaveFileAsync(Guid ticketId, IFormFile file)
+	{
+		if (file.Length == 0) return null;
+
+		var extension = Path.GetExtension(file.FileName);
+		if (string.IsNullOrEmpty(extension) || !AllowedExtensions.Contains(extension))
+		{
+			return null;
+		}
+
+		var originalFileName = Path.GetFileName(file.FileName);
+		var storedFileName = $"{Guid.NewGuid():N}{extension.ToLowerInvariant()}";
+		var filePath = Path.Combine(GetAttachmentsDirectory(), storedFileName);
+
+		await using (var stream = new FileStream(filePath, FileMode.Create))
+		{
+			await file.CopyToAsync(stream);
+		}
+
+		return new TicketAttachment
+		{
+			Id = Guid.NewGuid(),
+			SupportTicketId = ticketId,
+			FileName = originalFileName,
+			StoredFileName = storedFileName,
+			ContentType = string.IsNullOrWhiteSpace(file.ContentType) ? "application/octet-stream" : file.ContentType,
+			FileSize = file.Length,
+			CreatedAt = DateTime.UtcNow
+		};
+	}
 
 	public async Task<IActionResult> Index(int? ticketNumber, string? department, TicketResolutionStatus? status)
 	{
@@ -57,28 +110,38 @@ public class SupportTicketsController(ApplicationDbContext context) : Controller
 	[HttpGet("c/{code}")]
 	public async Task<IActionResult> ByCode(string code)
 	{
-		if (string.IsNullOrWhiteSpace(code))
+		if (!TryDecodeTicketCode(code, out var ticketId))
 		{
 			return NotFound();
 		}
 
-		Guid ticketId;
+		ViewBag.Code = code;
+		return await Details(ticketId);
+	}
+
+	private static bool TryDecodeTicketCode(string code, out Guid ticketId)
+	{
+		ticketId = Guid.Empty;
+		if (string.IsNullOrWhiteSpace(code))
+		{
+			return false;
+		}
+
 		try
 		{
 			var bytes = Microsoft.AspNetCore.WebUtilities.WebEncoders.Base64UrlDecode(code);
 			if (bytes.Length != 16)
 			{
-				return NotFound();
+				return false;
 			}
 
 			ticketId = new Guid(bytes);
+			return true;
 		}
 		catch
 		{
-			return NotFound();
+			return false;
 		}
-
-		return await Details(ticketId);
 	}
 
 	public static string ToShortSlug(Guid id)
@@ -98,6 +161,7 @@ public class SupportTicketsController(ApplicationDbContext context) : Controller
 		{
 			var ticket = await context.SupportTickets
 				.Include(item => item.Updates)
+				.Include(item => item.Attachments)
 				.FirstOrDefaultAsync(item => item.Id == id);
 
 			if (ticket is null)
@@ -106,6 +170,7 @@ public class SupportTicketsController(ApplicationDbContext context) : Controller
 			}
 
 			ticket.Updates = ticket.Updates.OrderByDescending(u => u.CreatedAt).ToList();
+			ticket.Attachments = ticket.Attachments.OrderByDescending(a => a.CreatedAt).ToList();
 			return View("Details", ticket);
 		}
 
@@ -129,6 +194,17 @@ public class SupportTicketsController(ApplicationDbContext context) : Controller
 						CreatedBy = u.CreatedBy,
 						CreatedAt = u.CreatedAt
 					})
+					.ToList(),
+				Attachments = ticket.Attachments
+					.OrderByDescending(a => a.CreatedAt)
+					.Select(a => new TicketAttachmentViewModel
+					{
+						Id = a.Id,
+						FileName = a.FileName,
+						ContentType = a.ContentType,
+						FileSize = a.FileSize,
+						CreatedAt = a.CreatedAt
+					})
 					.ToList()
 			})
 			.FirstOrDefaultAsync();
@@ -138,6 +214,7 @@ public class SupportTicketsController(ApplicationDbContext context) : Controller
 			return NotFound();
 		}
 
+		ViewBag.Code ??= id.HasValue ? ToShortSlug(id.Value) : string.Empty;
 		return View("PublicDetails", publicTicket);
 	}
 
@@ -181,7 +258,7 @@ public class SupportTicketsController(ApplicationDbContext context) : Controller
 
 	[HttpPost]
 	[ValidateAntiForgeryToken]
-	public async Task<IActionResult> Create([Bind("Department,TicketType,ResponsibleTechnician,Problem")] SupportTicket ticket)
+	public async Task<IActionResult> Create([Bind("Department,TicketType,ResponsibleTechnician,Problem")] SupportTicket ticket, List<IFormFile>? attachments)
 	{
 		if (!ModelState.IsValid)
 		{
@@ -203,6 +280,19 @@ public class SupportTicketsController(ApplicationDbContext context) : Controller
 			{
 				context.SupportTickets.Add(ticket);
 				await context.SaveChangesAsync();
+
+				if (attachments != null && attachments.Count > 0)
+				{
+					foreach (var file in attachments)
+					{
+						var attachment = await ProcessAndSaveFileAsync(ticket.Id, file);
+						if (attachment != null)
+						{
+							context.TicketAttachments.Add(attachment);
+						}
+					}
+					await context.SaveChangesAsync();
+				}
 
 				return RedirectToAction(nameof(Index));
 			}
@@ -396,15 +486,206 @@ public class SupportTicketsController(ApplicationDbContext context) : Controller
 	[ValidateAntiForgeryToken]
 	public async Task<IActionResult> DeleteConfirmed(Guid id)
 	{
-		var ticket = await context.SupportTickets.FindAsync(id);
+		var ticket = await context.SupportTickets
+			.Include(t => t.Attachments)
+			.FirstOrDefaultAsync(t => t.Id == id);
 
 		if (ticket is not null)
 		{
+			var attachmentsDir = GetAttachmentsDirectory();
+			foreach (var attachment in ticket.Attachments)
+			{
+				var filePath = Path.Combine(attachmentsDir, attachment.StoredFileName);
+				if (System.IO.File.Exists(filePath))
+				{
+					try { System.IO.File.Delete(filePath); } catch { /* ignore */ }
+				}
+			}
+
 			context.SupportTickets.Remove(ticket);
 			await context.SaveChangesAsync();
 		}
 
 		return RedirectToAction(nameof(Index));
+	}
+
+	[HttpPost]
+	[ValidateAntiForgeryToken]
+	public async Task<IActionResult> UploadAttachments(Guid id, List<IFormFile> files)
+	{
+		var ticket = await context.SupportTickets.FindAsync(id);
+		if (ticket is null)
+		{
+			return NotFound();
+		}
+
+		if (files != null && files.Count > 0)
+		{
+			foreach (var file in files)
+			{
+				var attachment = await ProcessAndSaveFileAsync(ticket.Id, file);
+				if (attachment != null)
+				{
+					context.TicketAttachments.Add(attachment);
+				}
+			}
+			await context.SaveChangesAsync();
+		}
+
+		return RedirectToAction(nameof(Details), new { id = ticket.Id });
+	}
+
+	[HttpGet("SupportTickets/attachment/{id:guid}")]
+	public async Task<IActionResult> DownloadAttachment(Guid id, bool download = false)
+	{
+		var attachment = await context.TicketAttachments.FindAsync(id);
+		if (attachment is null)
+		{
+			return NotFound();
+		}
+
+		var filePath = Path.Combine(GetAttachmentsDirectory(), attachment.StoredFileName);
+		if (!System.IO.File.Exists(filePath))
+		{
+			return NotFound();
+		}
+
+		if (download)
+		{
+			return PhysicalFile(filePath, attachment.ContentType, attachment.FileName);
+		}
+
+		return PhysicalFile(filePath, attachment.ContentType);
+	}
+
+	[HttpGet("SupportTickets/{id:guid}/download-zip")]
+	public async Task<IActionResult> DownloadAllAttachments(Guid id)
+	{
+		var ticket = await context.SupportTickets
+			.Include(t => t.Attachments)
+			.FirstOrDefaultAsync(t => t.Id == id);
+
+		if (ticket is null || ticket.Attachments.Count == 0)
+		{
+			return NotFound();
+		}
+
+		return GenerateZipResult(ticket);
+	}
+
+	[AllowAnonymous]
+	[HttpGet("c/{code}/zip")]
+	public async Task<IActionResult> DownloadZipByCode(string code)
+	{
+		if (!TryDecodeTicketCode(code, out var ticketId))
+		{
+			return NotFound();
+		}
+
+		var ticket = await context.SupportTickets
+			.Include(t => t.Attachments)
+			.FirstOrDefaultAsync(t => t.Id == ticketId);
+
+		if (ticket is null || ticket.Attachments.Count == 0)
+		{
+			return NotFound();
+		}
+
+		return GenerateZipResult(ticket);
+	}
+
+	[AllowAnonymous]
+	[HttpGet("c/{code}/anexo/{id:guid}")]
+	public async Task<IActionResult> DownloadAttachmentByCode(string code, Guid id, bool download = false)
+	{
+		if (!TryDecodeTicketCode(code, out var ticketId))
+		{
+			return NotFound();
+		}
+
+		var attachment = await context.TicketAttachments
+			.FirstOrDefaultAsync(a => a.Id == id && a.SupportTicketId == ticketId);
+
+		if (attachment is null)
+		{
+			return NotFound();
+		}
+
+		var filePath = Path.Combine(GetAttachmentsDirectory(), attachment.StoredFileName);
+		if (!System.IO.File.Exists(filePath))
+		{
+			return NotFound();
+		}
+
+		if (download)
+		{
+			return PhysicalFile(filePath, attachment.ContentType, attachment.FileName);
+		}
+
+		return PhysicalFile(filePath, attachment.ContentType);
+	}
+
+	private IActionResult GenerateZipResult(SupportTicket ticket)
+	{
+		var attachmentsDir = GetAttachmentsDirectory();
+		var memoryStream = new MemoryStream();
+		using (var archive = new ZipArchive(memoryStream, ZipArchiveMode.Create, true))
+		{
+			var usedNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+			foreach (var attachment in ticket.Attachments)
+			{
+				var filePath = Path.Combine(attachmentsDir, attachment.StoredFileName);
+				if (!System.IO.File.Exists(filePath))
+				{
+					continue;
+				}
+
+				var entryName = GetUniqueEntryName(attachment.FileName, usedNames);
+				archive.CreateEntryFromFile(filePath, entryName);
+			}
+		}
+
+		memoryStream.Position = 0;
+		return File(memoryStream.ToArray(), "application/zip", $"Chamado #{ticket.TicketNumber}.zip");
+	}
+
+	[HttpPost]
+	[ValidateAntiForgeryToken]
+	public async Task<IActionResult> DeleteAttachment(Guid id)
+	{
+		var attachment = await context.TicketAttachments.FindAsync(id);
+		if (attachment is null)
+		{
+			return NotFound();
+		}
+
+		var ticketId = attachment.SupportTicketId;
+		var filePath = Path.Combine(GetAttachmentsDirectory(), attachment.StoredFileName);
+		if (System.IO.File.Exists(filePath))
+		{
+			try { System.IO.File.Delete(filePath); } catch { /* ignore */ }
+		}
+
+		context.TicketAttachments.Remove(attachment);
+		await context.SaveChangesAsync();
+
+		return RedirectToAction(nameof(Details), new { id = ticketId });
+	}
+
+	private static string GetUniqueEntryName(string fileName, HashSet<string> usedNames)
+	{
+		var baseName = Path.GetFileNameWithoutExtension(fileName);
+		var ext = Path.GetExtension(fileName);
+		var name = fileName;
+		var counter = 1;
+
+		while (!usedNames.Add(name))
+		{
+			name = $"{baseName} ({counter++}){ext}";
+		}
+
+		return name;
 	}
 
 	private async Task<bool> TicketExists(Guid id)

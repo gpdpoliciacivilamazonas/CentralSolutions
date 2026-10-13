@@ -30,6 +30,9 @@ public class SupportTicketPublicViewModel
 	[Display(Name = "Atualizações")]
 	public List<TicketUpdateViewModel> Updates { get; set; } = [];
 
+	[Display(Name = "Anexos")]
+	public List<TicketAttachmentViewModel> Attachments { get; set; } = [];
+
 	[Display(Name = "Status")]
 	[Required(ErrorMessage = "Informe a situação do chamado.")]
 	public TicketResolutionStatus ResolutionStatus { get; set; } = TicketResolutionStatus.Open;

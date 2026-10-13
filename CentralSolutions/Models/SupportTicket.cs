@@ -31,6 +31,9 @@ public class SupportTicket
 	[Display(Name = "Atualizações")]
 	public ICollection<TicketUpdate> Updates { get; set; } = new List<TicketUpdate>();
 
+	[Display(Name = "Anexos")]
+	public ICollection<TicketAttachment> Attachments { get; set; } = new List<TicketAttachment>();
+
 	[Display(Name = "Status")]
 	[Required(ErrorMessage = "Informe a situação do chamado.")]
 	public TicketResolutionStatus ResolutionStatus { get; set; } = TicketResolutionStatus.Open;
