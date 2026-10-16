@@ -219,6 +219,10 @@ body {
 	padding: 1.5rem;
 }
 
+.text-pre-wrap {
+	white-space: pre-wrap;
+}
+
 .form-control,
 .form-select {
 	background-color: var(--app-input-bg);

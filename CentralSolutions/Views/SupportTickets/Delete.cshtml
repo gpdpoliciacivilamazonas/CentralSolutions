@@ -26,7 +26,7 @@
         <dt class="col-sm-4">@Html.DisplayNameFor(model => model.ResponsibleTechnician)</dt>
         <dd class="col-sm-8">@(Model.ResponsibleTechnician ?? "-")</dd>
         <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Problem)</dt>
-        <dd class="col-sm-8 text-break">@Model.Problem</dd>
+        <dd class="col-sm-8 text-break text-pre-wrap">@Model.Problem</dd>
         <dt class="col-sm-4">@Html.DisplayNameFor(model => model.ResolutionStatus)</dt>
         <dd class="col-sm-8"><span class="status-badge @GetStatusClass(Model.ResolutionStatus)">@GetStatusName(Model.ResolutionStatus)</span></dd>
     </dl>

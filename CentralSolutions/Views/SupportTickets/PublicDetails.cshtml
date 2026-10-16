@@ -25,7 +25,7 @@ ViewData["MetaImage"] = Url.Content("~/img/1000261363.jpg");
     <dt class="col-sm-4">@Html.DisplayNameFor(model => model.ResponsibleTechnician)</dt>
     <dd class="col-sm-8">@(Model.ResponsibleTechnician ?? "-")</dd>
     <dt class="col-sm-4">@Html.DisplayNameFor(model => model.Problem)</dt>
-    <dd class="col-sm-8 text-break">@Model.Problem</dd>
+    <dd class="col-sm-8 text-break text-pre-wrap">@Model.Problem</dd>
     <dt class="col-sm-4">@Html.DisplayNameFor(model => model.CreatedAt)</dt>
     <dd class="col-sm-8">@Model.CreatedAt.ToDisplayString()</dd>
     <dt class="col-sm-4">@Html.DisplayNameFor(model => model.UpdatedAt)</dt>
@@ -45,7 +45,7 @@ ViewData["MetaImage"] = Url.Content("~/img/1000261363.jpg");
               <span><strong>@(update.CreatedBy ?? "Técnico")</strong></span>
               <time class="text-nowrap">@update.CreatedAt.ToDisplayString()</time>
             </div>
-            <p class="mb-0 text-break" style="white-space: pre-wrap;">@update.Description</p>
+            <p class="mb-0 text-break text-pre-wrap">@update.Description</p>
           </div>
         }
       </div>
