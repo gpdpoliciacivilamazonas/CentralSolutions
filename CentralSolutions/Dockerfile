@@ -6,18 +6,23 @@ ENV ASPNETCORE_URLS=http://+:8080
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
+
+
 COPY ["CentralSolutions/CentralSolutions.csproj", "CentralSolutions/"]
 RUN dotnet restore "CentralSolutions/CentralSolutions.csproj"
+
+
 COPY . .
 WORKDIR "/src/CentralSolutions"
-RUN dotnet build "CentralSolutions.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
-FROM build AS publish
-ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "CentralSolutions.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "CentralSolutions.csproj" \
+	-c $BUILD_CONFIGURATION \
+	-o /app/publish \
+	--no-restore \
+	/p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
 RUN mkdir -p /app/data
-COPY --from=publish /app/publish .
+COPY --from=build /app/publish .
 ENTRYPOINT ["dotnet", "CentralSolutions.dll"]
