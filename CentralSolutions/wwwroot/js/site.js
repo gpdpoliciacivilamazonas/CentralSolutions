@@ -129,6 +129,78 @@ document.addEventListener('DOMContentLoaded', () => {
 			}
 		});
 	});
+
+	document.querySelectorAll('[data-attachment-input]').forEach((input) => {
+		const preview = input.parentElement?.querySelector('[data-attachment-preview]');
+		if (!preview) {
+			return;
+		}
+
+		const dataTransfer = new DataTransfer();
+
+		const formatSize = (bytes) => {
+			if (bytes < 1024) return `${bytes} B`;
+			if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+			return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+		};
+
+		const renderPreview = () => {
+			preview.innerHTML = '';
+			const files = Array.from(dataTransfer.files);
+			preview.hidden = files.length === 0;
+
+			files.forEach((file, index) => {
+				const ext = (file.name.split('.').pop() || '').toUpperCase();
+				const item = document.createElement('div');
+				item.className = 'attachment-item';
+
+				const info = document.createElement('div');
+				info.className = 'd-flex align-items-center gap-2';
+
+				const badge = document.createElement('span');
+				badge.className = 'attachment-badge';
+				badge.textContent = ext;
+
+				const nameWrap = document.createElement('div');
+				const nameSpan = document.createElement('span');
+				nameSpan.className = 'attachment-name';
+				nameSpan.textContent = file.name;
+
+				const sizeSpan = document.createElement('span');
+				sizeSpan.className = 'text-muted small ms-2';
+				sizeSpan.textContent = `(${formatSize(file.size)})`;
+
+				nameWrap.append(nameSpan, sizeSpan);
+				info.append(badge, nameWrap);
+
+				const removeBtn = document.createElement('button');
+				removeBtn.type = 'button';
+				removeBtn.className = 'btn btn-sm btn-outline-danger';
+				removeBtn.textContent = 'Remover';
+				removeBtn.addEventListener('click', () => {
+					dataTransfer.items.remove(index);
+					input.files = dataTransfer.files;
+					renderPreview();
+				});
+
+				item.append(info, removeBtn);
+				preview.appendChild(item);
+			});
+		};
+
+		input.addEventListener('change', () => {
+			Array.from(input.files).forEach((file) => {
+				const exists = Array.from(dataTransfer.files).some(
+					(existing) => existing.name === file.name && existing.size === file.size && existing.lastModified === file.lastModified
+				);
+				if (!exists) {
+					dataTransfer.items.add(file);
+				}
+			});
+			input.files = dataTransfer.files;
+			renderPreview();
+		});
+	});
 });
 function printTicket() {
   const printDate = document.getElementById("print-date")
